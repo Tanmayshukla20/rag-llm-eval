@@ -1,7 +1,10 @@
 """
 src/generator.py — the GENERATOR component.
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 Given a query and context (retrieved chunks), produce an answer grounded in
 the context. The prompt is faithfulness-first: answer ONLY from the context,
 and abstain when the context doesn't contain the answer.
@@ -24,9 +27,12 @@ from transformers import (
 )
 from dotenv import load_dotenv
 
+<<<<<<< HEAD
 # LangSmith tracing
 from langsmith import traceable, get_current_run_tree
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 load_dotenv()
 
 
@@ -121,8 +127,11 @@ def build_prompt(query, context):
     )
 
 
+<<<<<<< HEAD
 # LangSmith traces the local Qwen generation as an LLM run.
 @traceable(name="Qwen Generator", run_type="llm")
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 def generate(query, context):
     """Generate a grounded answer."""
 
@@ -146,9 +155,12 @@ def generate(query, context):
         for key, value in inputs.items()
     }
 
+<<<<<<< HEAD
     # Count input tokens for LangSmith metadata.
     input_tokens = inputs["input_ids"].shape[1]
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
     with torch.no_grad():
         output = model.generate(
             **inputs,
@@ -157,6 +169,7 @@ def generate(query, context):
             pad_token_id=tokenizer.eos_token_id
         )
 
+<<<<<<< HEAD
     # Count generated tokens for LangSmith metadata.
     output_tokens = output.shape[1] - input_tokens
     total_tokens = input_tokens + output_tokens
@@ -174,6 +187,8 @@ def generate(query, context):
             "cost_usd": 0.0
         })
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
     # Remove the original prompt tokens.
     generated_tokens = output[0][inputs["input_ids"].shape[1]:]
 

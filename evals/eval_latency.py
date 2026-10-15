@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 """
 Operational eval: LATENCY (with time-to-first-token).
 
@@ -402,6 +405,7 @@ def main():
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     main()
 
 
@@ -409,3 +413,6 @@ if __name__ == "__main__":
 
    
 
+=======
+    main()
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e

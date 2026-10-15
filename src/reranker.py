@@ -1,7 +1,11 @@
 import torch
 
 from sentence_transformers import CrossEncoder
+<<<<<<< HEAD
 from langsmith import traceable
+=======
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 from src.retriever import load_store
 
 
@@ -33,7 +37,10 @@ class RerankingRetriever:
         self.fetch_k = fetch_k
         self.top_k = top_k
 
+<<<<<<< HEAD
     @traceable(run_type="retriever", name="RerankingRetriever")
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
     def invoke(self, query):
 
         # 1. OVER-RETRIEVE:

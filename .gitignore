@@ -8,5 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+<<<<<<< HEAD
 .env
 .env
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e

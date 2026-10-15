@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # """
 # evals/eval_generator.py
 
@@ -246,6 +247,8 @@
 
 
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 """
 evals/eval_generator.py
 
@@ -265,7 +268,10 @@ Run:
 import json
 import torch
 
+<<<<<<< HEAD
 from evals.harness import summarize_by_metric
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 from dotenv import load_dotenv
 from json_repair import loads as repair_json
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -433,6 +439,7 @@ Evaluation prompt:
 # LOAD GOLDENS + RUN GENERATOR
 # ------------------------------------------------------------
 
+<<<<<<< HEAD
 def run():
 
     with open(GOLDEN_PATH) as f:
@@ -499,3 +506,60 @@ def run_local():
 
 if __name__ == "__main__":
     run_local()
+=======
+with open(GOLDEN_PATH) as f:
+    goldens = json.load(f)
+
+test_cases = []
+
+for g in goldens:
+    context = g["ideal_context"]
+    answer = generate(g["query"], context)
+
+    test_cases.append(
+        LLMTestCase(
+            input=g["query"],
+            actual_output=answer,
+            retrieval_context=context
+        )
+    )
+
+print(f"Evaluating {len(test_cases)} test cases...")
+
+
+# ------------------------------------------------------------
+# EVALUATE
+# ------------------------------------------------------------
+
+judge = LocalQwenLLM()
+
+metrics = [
+    FaithfulnessMetric(
+        threshold=THRESHOLD,
+        model=judge,
+        include_reason=True
+    ),
+    AnswerRelevancyMetric(
+        threshold=THRESHOLD,
+        model=judge,
+        include_reason=True
+    )
+]
+
+evaluate(
+    test_cases=test_cases,
+    metrics=metrics,
+    async_config=AsyncConfig(run_async=True),
+    hyperparameters={
+        "generator": "Qwen/Qwen2.5-0.5B-Instruct",
+        "generator_device": "mps",
+        "generator_dtype": "float16",
+        "judge_model": JUDGE_MODEL,
+        "judge_device": "mps",
+        "judge_dtype": "float16",
+        "max_new_tokens": 128,
+        "threshold": THRESHOLD,
+        "golden_set": GOLDEN_PATH
+    }
+)
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e

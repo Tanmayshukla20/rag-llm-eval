@@ -18,7 +18,10 @@ dependencies = [
     "langchain-ollama>=1.1.0",
     "langchain-openai>=1.6.2",
     "langchain-text-splitters>=1.1.2",
+<<<<<<< HEAD
     "langsmith>=0.13.0",
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
     "pytest>=9.1.1",
     "python-dotenv>=1.2.3",
     "sentence-transformers>=6.1.0",

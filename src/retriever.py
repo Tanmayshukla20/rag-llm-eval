@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 import os
 import re
 import glob
@@ -68,7 +72,11 @@ if __name__ == "__main__":
 
     retriever = build_retriever()
 
+<<<<<<< HEAD
     results = retriever.invoke("what is regression testing?") #since retriever is a runnable hence it can be invoked
+=======
+    results = retriever.invoke("what is regression testing?")
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
     
     for r in results:
         print(f"[Session {r.metadata['session']}] {r.page_content[:150]}...\n")

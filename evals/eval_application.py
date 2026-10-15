@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # # eval_application.py
 
 # import json
@@ -264,6 +265,8 @@
 
 
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 # eval_application.py
 
 import json
@@ -281,7 +284,10 @@ from deepeval.metrics.g_eval import Rubric
 from deepeval.models import DeepEvalBaseLLM
 
 from src.rag_pipeline import RagPipeline
+<<<<<<< HEAD
 from evals.harness import summarize_by_metric
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 
 load_dotenv()
 
@@ -299,7 +305,10 @@ class LocalQwenLLM(DeepEvalBaseLLM):
         print("Judge device:", self.device)
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             dtype=torch.float16
@@ -354,7 +363,10 @@ Evaluation prompt:
         ).to(self.device)
 
         with torch.no_grad():
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             outputs = self.model.generate(
                 **inputs,
                 max_new_tokens=128,
@@ -402,7 +414,10 @@ def run(rag):
     test_cases = []
 
     for g in goldens:
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         result = rag.invoke(g["question"])
 
         test_cases.append(
@@ -415,6 +430,7 @@ def run(rag):
 
     judge = LocalQwenLLM()
 
+<<<<<<< HEAD
 
     correctness = GEval(
         name="Correctness",
@@ -425,10 +441,20 @@ def run(rag):
             "Do not require the wording to exactly match the expected answer.",
             "Do not give credit for unsupported claims.",
             "Judge factual correctness only."
+=======
+    correctness = GEval(
+        name="Correctness",
+        evaluation_steps=[
+            "Compare factual claims in the actual output with the expected output.",
+            "Do not penalize brevity or missing details.",
+            "Do not penalize additional correct information.",
+            "Penalize factual errors and contradictions."
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         ],
         rubric=[
             Rubric(
                 score_range=(9, 10),
+<<<<<<< HEAD
                 expected_outcome=(
                     "The answer is fully correct and directly addresses "
                     "the question without substantive factual errors."
@@ -447,6 +473,17 @@ def run(rag):
                     "The answer is substantially incorrect, contradicts "
                     "the expected answer, or fails to answer the question."
                 )
+=======
+                expected_outcome="All stated claims are factually correct."
+            ),
+            Rubric(
+                score_range=(5, 8),
+                expected_outcome="Mostly correct with a minor inaccuracy."
+            ),
+            Rubric(
+                score_range=(0, 4),
+                expected_outcome="Contains a clear factual error or contradiction."
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             )
         ],
         evaluation_params=[
@@ -455,6 +492,7 @@ def run(rag):
             LLMTestCaseParams.EXPECTED_OUTPUT
         ],
         threshold=THRESHOLD,
+<<<<<<< HEAD
         model=judge,
         strict_mode=False
     )
@@ -468,10 +506,23 @@ def run(rag):
             "Check whether the actual answer covers the important points present in the expected answer.",
             "Do not penalize different wording when the same information is conveyed.",
             "Judge completeness only."
+=======
+        model=judge
+    )
+
+    completeness = GEval(
+        name="Completeness",
+        evaluation_steps=[
+            "Identify the key points in the expected output.",
+            "Check how many are covered by the actual output.",
+            "Penalize omitted or partially covered key points.",
+            "Do not penalize additional information."
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         ],
         rubric=[
             Rubric(
                 score_range=(9, 10),
+<<<<<<< HEAD
                 expected_outcome=(
                     "The answer covers all important points needed to "
                     "answer the question."
@@ -490,6 +541,17 @@ def run(rag):
                     "The answer misses major parts of the expected answer "
                     "or provides very little of the required information."
                 )
+=======
+                expected_outcome="Covers essentially all key points."
+            ),
+            Rubric(
+                score_range=(5, 8),
+                expected_outcome="Covers the main points but misses some."
+            ),
+            Rubric(
+                score_range=(0, 4),
+                expected_outcome="Misses several important points."
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             )
         ],
         evaluation_params=[
@@ -498,6 +560,7 @@ def run(rag):
             LLMTestCaseParams.EXPECTED_OUTPUT
         ],
         threshold=THRESHOLD,
+<<<<<<< HEAD
         model=judge,
         strict_mode=False
     )
@@ -511,10 +574,23 @@ def run(rag):
             "Check whether the answer uses a professional and appropriate teaching tone.",
             "Do not judge factual correctness or completeness.",
             "Judge writing style only."
+=======
+        model=judge
+    )
+
+    style = GEval(
+        name="Style",
+        evaluation_steps=[
+            "Judge only the teaching style and tone.",
+            "Reward clear, intuitive, conversational explanations.",
+            "Reward plain language and briefly explained technical terms.",
+            "Penalize stiff, robotic, jargon-heavy, or bare-list answers."
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         ],
         rubric=[
             Rubric(
                 score_range=(9, 10),
+<<<<<<< HEAD
                 expected_outcome=(
                     "The answer is clear, concise, professional, and "
                     "easy to understand."
@@ -533,6 +609,21 @@ def run(rag):
                     "The answer is unclear, poorly written, unprofessional, "
                     "or difficult to understand."
                 )
+=======
+                expected_outcome="Intuitive, conversational teaching style."
+            ),
+            Rubric(
+                score_range=(7, 8),
+                expected_outcome="Clear, conversational, well-explained prose."
+            ),
+            Rubric(
+                score_range=(4, 6),
+                expected_outcome="Understandable but somewhat formal or flat."
+            ),
+            Rubric(
+                score_range=(0, 3),
+                expected_outcome="Dry, robotic, jargon-heavy, or poorly explained."
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             )
         ],
         evaluation_params=[
@@ -540,12 +631,19 @@ def run(rag):
             LLMTestCaseParams.ACTUAL_OUTPUT
         ],
         threshold=THRESHOLD,
+<<<<<<< HEAD
         model=judge,
         strict_mode=False
     )
 
 
     result = evaluate(
+=======
+        model=judge
+    )
+
+    return evaluate(
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         test_cases=test_cases,
         metrics=[correctness, completeness, style],
         async_config=AsyncConfig(run_async=False),
@@ -557,6 +655,7 @@ def run(rag):
         }
     )
 
+<<<<<<< HEAD
     return summarize_by_metric(result)
 
 
@@ -566,3 +665,8 @@ def run_local():
 
 if __name__ == "__main__":
     run_local()
+=======
+
+if __name__ == "__main__":
+    run(RagPipeline())
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e

@@ -1037,6 +1037,7 @@
 
 
 
+<<<<<<< HEAD
 # # ## __________________________________________________________________________________
 # # ##                           AFTER APPLYING RERANKING:
 # # ##___________________________________________________________________________________
@@ -1286,6 +1287,8 @@
 
 
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 
 import json
 from json_repair import loads as repair_json
@@ -1298,7 +1301,10 @@ from deepeval.models import DeepEvalBaseLLM
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from src.reranker import RerankingRetriever
+<<<<<<< HEAD
 from evals.harness import summarize_by_metric
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 
 load_dotenv()
 
@@ -1479,6 +1485,7 @@ Evaluation prompt:
         return self.model_name
 
 
+<<<<<<< HEAD
 def run(retriever):
 
     with open(GOLDEN_PATH) as f:
@@ -1538,3 +1545,53 @@ def run_local():
 
 if __name__ == "__main__":
     run_local()
+=======
+with open(GOLDEN_PATH) as f:
+    goldens = json.load(f)
+
+retriever = RerankingRetriever(fetch_k=10, top_k=3)
+test_cases = []
+
+for g in goldens:
+    retrieved = retriever.invoke(g["query"])
+    retrieval_context = [doc.page_content for doc in retrieved]
+
+    test_cases.append(
+        LLMTestCase(
+            input=g["query"],
+            expected_output=g["ideal_answer"],
+            retrieval_context=retrieval_context,
+            actual_output="(generator not evaluated in this run)",
+        )
+    )
+
+judge_model = LocalQwenLLM()
+
+metrics = [
+    ContextualRecallMetric(
+        threshold=THRESHOLD,
+        model=judge_model,
+        include_reason=True
+    ),
+    ContextualPrecisionMetric(
+        threshold=THRESHOLD,
+        model=judge_model,
+        include_reason=True
+    ),
+]
+
+evaluate(
+    test_cases=test_cases,
+    metrics=metrics,
+    async_config=AsyncConfig(run_async=False),
+    hyperparameters={
+        "retriever": "reranker",
+        "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+        "chunk_size": 800,
+        "chunk_overlap": 100,
+        "top_K": 3,
+        "judge_model": JUDGE_MODEL,
+        "golden_set": GOLDEN_PATH,
+    }
+)
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e

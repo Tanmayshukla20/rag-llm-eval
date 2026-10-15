@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # # evals/eval_rag_pipeline.py
 
 # import json
@@ -399,6 +400,12 @@ evals/eval_rag_pipeline.py
 import json
 import torch
 
+=======
+# evals/eval_rag_pipeline.py
+
+import json
+import torch
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 from json_repair import loads as repair_json
 from dotenv import load_dotenv
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -413,9 +420,13 @@ from deepeval.metrics import (
 )
 from deepeval.models import DeepEvalBaseLLM
 
+<<<<<<< HEAD
 
 from src.rag_pipeline import RagPipeline
 from evals.harness import summarize_by_metric
+=======
+from src.rag_pipeline import RagPipeline
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 
 load_dotenv()
 
@@ -426,11 +437,15 @@ THRESHOLD = 0.7
 
 class LocalQwenLLM(DeepEvalBaseLLM):
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
     def __init__(self):
         self.model_name = JUDGE_MODEL
         self.device = "mps" if torch.backends.mps.is_available() else "cpu"
 
+<<<<<<< HEAD
 
         print("Using device:", self.device)
 
@@ -438,11 +453,18 @@ class LocalQwenLLM(DeepEvalBaseLLM):
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
 
+=======
+        print("Using device:", self.device)
+
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             dtype=torch.float16
         ).to(self.device)
 
+<<<<<<< HEAD
 
         self.model.eval()
 
@@ -457,17 +479,31 @@ class LocalQwenLLM(DeepEvalBaseLLM):
         if schema is not None:
 
 
+=======
+        self.model.eval()
+
+    def load_model(self):
+        return self.model
+
+    def generate(self, prompt: str, schema=None):
+
+        if schema is not None:
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             schema_json = json.dumps(
                 schema.model_json_schema(),
                 indent=2
             )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             prompt = f"""
 You are an LLM evaluator.
 
 Return ONLY valid JSON matching this schema:
 
+<<<<<<< HEAD
 
 {schema_json}
 
@@ -475,6 +511,11 @@ Return ONLY valid JSON matching this schema:
 STRICT RULES:
 
 
+=======
+{schema_json}
+
+STRICT RULES:
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 - Return only the JSON object.
 - Use double quotes.
 - Do not use markdown.
@@ -484,16 +525,21 @@ STRICT RULES:
 - Do not rename any field.
 - Do not add fields that are not required.
 
+<<<<<<< HEAD
 
 For every item inside "verdicts":
 
 
+=======
+For every item inside "verdicts":
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 - "verdict" must contain the required verdict.
 - "reason" must contain the reason for the verdict.
 - If "statement" exists in the schema, you MUST include "statement".
 - When "statement" is required, copy the statement being evaluated exactly
   from the evaluation prompt. Do not invent or summarize it.
 
+<<<<<<< HEAD
 
 Evaluation prompt:
 
@@ -503,6 +549,13 @@ Evaluation prompt:
 """
 
 
+=======
+Evaluation prompt:
+
+{prompt}
+"""
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         messages = [
             {
                 "role": "system",
@@ -518,23 +571,33 @@ Evaluation prompt:
             }
         ]
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         text = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True
         )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         inputs = self.tokenizer(
             text,
             return_tensors="pt"
         ).to(self.device)
 
+<<<<<<< HEAD
 
         with torch.no_grad():
 
 
+=======
+        with torch.no_grad():
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             outputs = self.model.generate(
                 **inputs,
                 max_new_tokens=256,
@@ -542,17 +605,26 @@ Evaluation prompt:
                 pad_token_id=self.tokenizer.eos_token_id
             )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         response = self.tokenizer.decode(
             outputs[0][inputs["input_ids"].shape[1]:],
             skip_special_tokens=True
         ).strip()
 
+<<<<<<< HEAD
 
         if schema is None:
             return response
 
 
+=======
+        if schema is None:
+            return response
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         response = (
             response
             .removeprefix("```json")
@@ -561,7 +633,10 @@ Evaluation prompt:
             .strip()
         )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         starts = [
             i for i in (
                 response.find("{"),
@@ -570,22 +645,30 @@ Evaluation prompt:
             if i >= 0
         ]
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         if not starts:
             raise ValueError(
                 f"Qwen did not return JSON:\n{response}"
             )
 
+<<<<<<< HEAD
 
         parsed = repair_json(
             response[min(starts):]
         )
 
+=======
+        parsed = repair_json(response[min(starts):])
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 
         # --------------------------------------------------------
         # NORMALIZE DEEPEVAL VERDICTS
         # --------------------------------------------------------
 
+<<<<<<< HEAD
 
         if "verdicts" in getattr(schema, "model_fields", {}):
 
@@ -594,17 +677,28 @@ Evaluation prompt:
                 parsed = {"verdicts": parsed}
 
 
+=======
+        if "verdicts" in getattr(schema, "model_fields", {}):
+
+            if isinstance(parsed, list):
+                parsed = {"verdicts": parsed}
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             elif (
                 isinstance(parsed, dict)
                 and "verdict" in parsed
             ):
                 parsed = {"verdicts": [parsed]}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             if (
                 isinstance(parsed, dict)
                 and isinstance(parsed.get("verdicts"), list)
             ):
+<<<<<<< HEAD
 
 
                 normalized = []
@@ -617,10 +711,20 @@ Evaluation prompt:
                         continue
 
 
+=======
+                normalized = []
+
+                for item in parsed["verdicts"]:
+
+                    if not isinstance(item, dict):
+                        continue
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
                     statement = item.get("statement", "")
                     verdict = item.get("verdict", "")
                     reason = item.get("reason", "")
 
+<<<<<<< HEAD
 
                     # Handle Qwen occasionally nesting verdict data.
                     if isinstance(verdict, dict):
@@ -629,36 +733,55 @@ Evaluation prompt:
                         nested = verdict
 
 
+=======
+                    # Handle Qwen occasionally nesting verdict data.
+                    if isinstance(verdict, dict):
+                        nested = verdict
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
                         statement = nested.get(
                             "statement",
                             statement
                         )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
                         reason = nested.get(
                             "reason",
                             reason
                         )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
                         verdict = nested.get(
                             "verdict",
                             ""
                         )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
                     result = {
                         "verdict": str(verdict),
                         "reason": str(reason)
                     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
                     # ContextualRelevancyVerdicts requires
                     # "statement". Other DeepEval verdict schemas
                     # do not necessarily require it.
                     if "statement" in item or statement:
                         result["statement"] = str(statement)
 
+<<<<<<< HEAD
 
                     normalized.append(result)
 
@@ -666,10 +789,17 @@ Evaluation prompt:
                 parsed["verdicts"] = normalized
 
 
+=======
+                    normalized.append(result)
+
+                parsed["verdicts"] = normalized
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
         # --------------------------------------------------------
         # VALIDATE AGAINST THE EXACT DEEPEVAL SCHEMA
         # --------------------------------------------------------
 
+<<<<<<< HEAD
 
         try:
 
@@ -680,10 +810,18 @@ Evaluation prompt:
         except Exception as first_error:
 
 
+=======
+        try:
+            return schema.model_validate(parsed)
+
+        except Exception as first_error:
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             # One repair attempt using Qwen itself.
             repair_prompt = f"""
 Your previous JSON response did not match the required schema.
 
+<<<<<<< HEAD
 
 REQUIRED SCHEMA:
 
@@ -709,6 +847,23 @@ Fix the JSON.
 STRICT RULES:
 
 
+=======
+REQUIRED SCHEMA:
+
+{json.dumps(schema.model_json_schema(), indent=2)}
+
+ORIGINAL EVALUATION:
+
+{prompt}
+
+PREVIOUS JSON:
+
+{json.dumps(parsed, indent=2)}
+
+Fix the JSON.
+
+STRICT RULES:
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 - Return ONLY valid JSON.
 - Match the schema exactly.
 - Do not omit required fields.
@@ -717,12 +872,18 @@ STRICT RULES:
 - Copy each required statement from the original evaluation.
 - Keep the original verdict and reason whenever possible.
 
+<<<<<<< HEAD
 
 Return the corrected JSON only.
 
 """
 
 
+=======
+Return the corrected JSON only.
+"""
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             repair_messages = [
                 {
                     "role": "system",
@@ -737,23 +898,33 @@ Return the corrected JSON only.
                 }
             ]
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             repair_text = self.tokenizer.apply_chat_template(
                 repair_messages,
                 tokenize=False,
                 add_generation_prompt=True
             )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             repair_inputs = self.tokenizer(
                 repair_text,
                 return_tensors="pt"
             ).to(self.device)
 
+<<<<<<< HEAD
 
             with torch.no_grad():
 
 
+=======
+            with torch.no_grad():
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
                 repair_outputs = self.model.generate(
                     **repair_inputs,
                     max_new_tokens=256,
@@ -761,7 +932,10 @@ Return the corrected JSON only.
                     pad_token_id=self.tokenizer.eos_token_id
                 )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             repair_response = self.tokenizer.decode(
                 repair_outputs[0][
                     repair_inputs["input_ids"].shape[1]:
@@ -769,7 +943,10 @@ Return the corrected JSON only.
                 skip_special_tokens=True
             ).strip()
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             repair_response = (
                 repair_response
                 .removeprefix("```json")
@@ -778,7 +955,10 @@ Return the corrected JSON only.
                 .strip()
             )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             repair_starts = [
                 i for i in (
                     repair_response.find("{"),
@@ -787,19 +967,27 @@ Return the corrected JSON only.
                 if i >= 0
             ]
 
+<<<<<<< HEAD
 
             if not repair_starts:
 
 
+=======
+            if not repair_starts:
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
                 raise ValueError(
                     f"Qwen JSON repair failed:\n{repair_response}"
                 ) from first_error
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
             repaired = repair_json(
                 repair_response[min(repair_starts):]
             )
 
+<<<<<<< HEAD
 
             return schema.model_validate(repaired)
 
@@ -808,16 +996,27 @@ Return the corrected JSON only.
         return self.generate(prompt, schema)
 
 
+=======
+            return schema.model_validate(repaired)
+
+    async def a_generate(self, prompt: str, schema=None):
+        return self.generate(prompt, schema)
+
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
     def get_model_name(self):
         return self.model_name
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
 # ------------------------------------------------------------
 # RUN RAG PIPELINE
 # ------------------------------------------------------------
 
+<<<<<<< HEAD
 
 def run(rag):
 
@@ -897,3 +1096,61 @@ def run_local():
 
 if __name__ == "__main__":
     run_local()
+=======
+with open(GOLDEN_PATH) as f:
+    goldens = json.load(f)
+
+rag = RagPipeline()
+test_cases = []
+
+for g in goldens:
+    result = rag.invoke(g["query"])
+
+    test_cases.append(
+        LLMTestCase(
+            input=g["query"],
+            actual_output=result["answer"],
+            retrieval_context=result["context"]
+        )
+    )
+
+print(f"Evaluating {len(test_cases)} test cases...")
+
+
+# ------------------------------------------------------------
+# EVALUATE
+# ------------------------------------------------------------
+
+judge_model = LocalQwenLLM()
+
+metrics = [
+    ContextualRelevancyMetric(
+        threshold=THRESHOLD,
+        model=judge_model,
+        include_reason=True
+    ),
+    FaithfulnessMetric(
+        threshold=THRESHOLD,
+        model=judge_model,
+        include_reason=True
+    ),
+    AnswerRelevancyMetric(
+        threshold=THRESHOLD,
+        model=judge_model,
+        include_reason=True
+    )
+]
+
+evaluate(
+    test_cases=test_cases,
+    metrics=metrics,
+    async_config=AsyncConfig(run_async=False),
+    hyperparameters={
+        "rag_pipeline": "RagPipeline",
+        "judge_model": JUDGE_MODEL,
+        "judge_device": "mps",
+        "threshold": THRESHOLD,
+        "golden_set": GOLDEN_PATH,
+    }
+)
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e

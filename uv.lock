@@ -3172,7 +3172,10 @@ dependencies = [
     { name = "langchain-ollama" },
     { name = "langchain-openai" },
     { name = "langchain-text-splitters" },
+<<<<<<< HEAD
     { name = "langsmith" },
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
     { name = "pytest" },
     { name = "python-dotenv" },
     { name = "sentence-transformers" },
@@ -3192,7 +3195,10 @@ requires-dist = [
     { name = "langchain-ollama", specifier = ">=1.1.0" },
     { name = "langchain-openai", specifier = ">=1.6.2" },
     { name = "langchain-text-splitters", specifier = ">=1.1.2" },
+<<<<<<< HEAD
     { name = "langsmith", specifier = ">=0.13.0" },
+=======
+>>>>>>> c21718680dba0790819097c8206099b1721f0e0e
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "python-dotenv", specifier = ">=1.2.3" },
     { name = "sentence-transformers", specifier = ">=6.1.0" },

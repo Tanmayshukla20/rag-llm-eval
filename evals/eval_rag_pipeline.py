@@ -390,21 +390,18 @@
 
 
 
+
 """
 evals/eval_rag_pipeline.py
 """
 
 
 import json
-
-
 import torch
-
 
 from json_repair import loads as repair_json
 from dotenv import load_dotenv
 from transformers import AutoTokenizer, AutoModelForCausalLM
-
 
 from deepeval import evaluate
 from deepeval.evaluate import AsyncConfig
@@ -420,9 +417,7 @@ from deepeval.models import DeepEvalBaseLLM
 from src.rag_pipeline import RagPipeline
 from evals.harness import summarize_by_metric
 
-
 load_dotenv()
-
 
 GOLDEN_PATH = "goldens/faithfulness_dataset.json"
 JUDGE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
@@ -896,12 +891,8 @@ def run(rag):
     return summarize_by_metric(result)
 
 
-
-
 def run_local():
     return run(RagPipeline())
-
-
 
 
 if __name__ == "__main__":

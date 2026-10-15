@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     retriever = build_retriever()
 
-    results = retriever.invoke("what is regression testing?")
+    results = retriever.invoke("what is regression testing?") #since retriever is a runnable hence it can be invoked
     
     for r in results:
         print(f"[Session {r.metadata['session']}] {r.page_content[:150]}...\n")

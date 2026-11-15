@@ -1,0 +1,1636 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:16.000
+[SQUEAKING] [RUSTLING] [CLICKING]
+
+00:00:16.000 --> 00:00:22.000
+RAMA RAMAKRISHNAN: So let's start with a quick review. Last week, we looked at BERT, how BERT was created.
+
+00:00:22.000 --> 00:00:27.000
+And we learned about this technique called masking, which is a kind of self-supervised learning.
+
+00:00:27.000 --> 00:00:32.000
+And the idea of masking was very simple. We asked ourselves the question. We have seen ways in which people
+
+00:00:32.000 --> 00:00:38.000
+can take images and pre-trained models like ResNet on vast body of images.
+
+00:00:38.000 --> 00:00:43.000
+But then for each image, somebody had to go and label them. So for text, we asked the question, well,
+
+00:00:43.000 --> 00:00:51.000
+what does it mean to label a piece of text when we don't actually have a clearly defined end goal in mind, except the general goal of pre-training things?
+
+00:00:51.000 --> 00:00:57.000
+And then we said oh, well, what we can do is we can actually replace some of the words in every sentence
+
+00:00:57.000 --> 00:01:02.000
+with what we call a mask token. And then we just train the network to recover the blanks,
+
+00:01:02.000 --> 00:01:09.000
+to fill in the blanks. And this technique, which is one of many ways of doing what's called self-supervised learning, is called masking.
+
+00:01:09.000 --> 00:01:15.000
+And we described how, if you essentially take all of Wikipedia, and for every sentence,
+
+00:01:15.000 --> 00:01:21.000
+you mask it like this, and then train a network to recover, to fill in the blanks, the resulting network
+
+00:01:21.000 --> 00:01:26.000
+becomes really good at doing all kinds of interesting things. And that, in fact, the first such network,
+
+00:01:26.000 --> 00:01:32.000
+or one of the first such networks, was called BERT. And in fact in your homework, you've been looking at BERT and so on and so forth.
+
+00:01:32.000 --> 00:01:38.000
+That's masking. Now we're going to switch gears and talk about a different kind of self-supervised learning, which
+
+00:01:38.000 --> 00:01:45.000
+is different from masking, which turns out to be weirdly more interesting and powerful.
+
+00:01:45.000 --> 00:01:50.000
+So we are going to look at another technique. And this technique is called next word prediction.
+
+00:01:50.000 --> 00:01:55.000
+So now it is actually, in some sense, a special case of masking, where you're basically saying,
+
+00:01:55.000 --> 00:02:01.000
+take a sentence and, instead of randomly picking a word and making it a blank, you're saying,
+
+00:02:01.000 --> 00:02:07.000
+I'm just going to take the last word and make it a blank. And then you send the sentence in.
+
+00:02:07.000 --> 00:02:14.000
+And then you have the machine just fill in the blank on the last word, predict the next word. And you don't have to use full sentences for it.
+
+00:02:14.000 --> 00:02:20.000
+You can use parts of sentences for it, sentence fragments as well. So if you take the same sentence as before,
+
+00:02:20.000 --> 00:02:26.000
+the mission of the MIT Sloan School, you can literally divide it into-- well, you can give the and ask it to predict mission.
+
+00:02:26.000 --> 00:02:31.000
+If you can give it the mission and ask it to predict of. You give it the mission, of, ask to predict the.
+
+00:02:31.000 --> 00:02:36.000
+You get the idea. So every sentence fragment, you can take, and literally just give it the first few and then predict
+
+00:02:36.000 --> 00:02:42.000
+the next one, first few, next one, first few, next one. So this is next word prediction.
+
+00:02:42.000 --> 00:02:49.000
+And so what we're going to do now is we're going to actually take the transformer encoder
+
+00:02:49.000 --> 00:02:55.000
+architecture that we used to build BERT in the last class. And we're going to try to use it to solve next word prediction,
+
+00:02:55.000 --> 00:03:01.000
+to build a model that can do next word prediction. So this is what we have.
+
+00:03:01.000 --> 00:03:10.000
+So what we're going to do is, if you take the phrase, the cat sat on the mat, so the phrase was, let's say,
+
+00:03:10.000 --> 00:03:20.000
+the cat sat on the mat, so what you might want to do is to say,
+
+00:03:20.000 --> 00:03:25.000
+OK, this is the input.
+
+00:03:25.000 --> 00:03:33.000
+Output, the cat. Then maybe you have the cat.
+
+00:03:33.000 --> 00:03:39.000
+And then the output is sat. The cat sat on, and so on.
+
+00:03:39.000 --> 00:03:45.000
+You get the idea. And then, finally, we have the cat sat, whoa, whoa, whoa, whoa,
+
+00:03:45.000 --> 00:03:52.000
+the mat. This, basically, what we have, all these inputs and outputs. But we're going to very compactly express it
+
+00:03:52.000 --> 00:03:58.000
+as if we're just coming in through as one sort of data point in one batch. And that's what we're doing here.
+
+00:03:58.000 --> 00:04:04.000
+So what we're going to do is we're going to stack it up like this, where we have the cat sat on the, on the left,
+
+00:04:04.000 --> 00:04:11.000
+meaning everything but the last word. And then we're going to take that same sentence and just shift it to the left one.
+
+00:04:11.000 --> 00:04:19.000
+So the cat sat on the mat, we cut off the mat, right? And that becomes the input. Then we cut off the first word, and that becomes the output.
+
+00:04:19.000 --> 00:04:27.000
+So when you look at it that way, you can see here, the, you will want the to be used to predict cat,
+
+00:04:27.000 --> 00:04:33.000
+you will want the cat to be used to predict sat, and so on and so forth.
+
+00:04:33.000 --> 00:04:41.000
+So this is just a little sort of manipulation so that we don't have to have dozens of sentences or sentence
+
+00:04:41.000 --> 00:04:47.000
+examples just for one starting sentence. So if you have something like this, what you can do
+
+00:04:47.000 --> 00:04:52.000
+is you can run it through positional input embeddings, like we have done before with BERT.
+
+00:04:52.000 --> 00:04:58.000
+Then we can run it through a whole bunch of transformers. It's like a transformer stack.
+
+00:04:58.000 --> 00:05:03.000
+Then we get these contextual embeddings. Then we run them through maybe one or more ReLUs, if you want,
+
+00:05:03.000 --> 00:05:11.000
+because it's always a good idea to stick some ReLUs at the very end. And then we basically attach a softmax
+
+00:05:11.000 --> 00:05:17.000
+to every one of the things that are coming out. And then that softmax is actually
+
+00:05:17.000 --> 00:05:24.000
+going to be a softmax whose range is the entire vocabulary.
+
+00:05:24.000 --> 00:05:30.000
+For now, let's assume that the vocabulary is just a vocabulary of words, not tokens. We'll get into tokens a bit later on in the class.
+
+00:05:30.000 --> 00:05:37.000
+For now, just assume it's words. And roughly speaking, let's say there are 50,000 words in our vocabulary. So each of these softmaxes-- and this
+
+00:05:37.000 --> 00:05:45.000
+is exactly what we did for BERT, by the way. Each of these softmaxes is like a 50,000 way softmax.
+
+00:05:45.000 --> 00:05:51.000
+But what we're going to do is, here, when we look at it this way, since we are fundamentally
+
+00:05:51.000 --> 00:05:58.000
+bothered about next word prediction, as you will see later on, we are actually going to ignore all these predictions because who cares?
+
+00:05:58.000 --> 00:06:03.000
+We are only going to look at the last one to figure out, OK, what is the last prediction?
+
+00:06:03.000 --> 00:06:09.000
+What is it? Because the last prediction is going to be based on everything that came before it here.
+
+00:06:09.000 --> 00:06:16.000
+So this is really the next word that's actually being predicted. All the things before, we don't care so much.
+
+00:06:16.000 --> 00:06:24.000
+And all this will become slightly clearer because we're going to make a couple of passes through it. Yeah? AUDIENCE: How do we predict the end of a sentence then?
+
+00:06:24.000 --> 00:06:30.000
+RAMA RAMAKRISHNAN: So the notion of a sentence has disappeared at this point. What we're going to do is, when we
+
+00:06:30.000 --> 00:06:36.000
+look at how we tokenize the input for these kinds of models, we're actually going to take punctuation into account.
+
+00:06:36.000 --> 00:06:41.000
+AUDIENCE: Oh. RAMA RAMAKRISHNAN: So we're going to take periods into account, exclamation marks into account, and so on and so forth. And that will answer your question,
+
+00:06:41.000 --> 00:06:49.000
+and we'll come back to that. So this is what we have. So all right, so just to be clear,
+
+00:06:49.000 --> 00:06:54.000
+the embedding that's coming out of the final dense layer is passed through its own softmax with the number of softmax categories
+
+00:06:54.000 --> 00:07:03.000
+equal to the vocab size. All right, so first of all, so let's
+
+00:07:03.000 --> 00:07:09.000
+say we train models, a model like this, with lots of inputs and outputs. This just looks like BERT.
+
+00:07:09.000 --> 00:07:15.000
+It's not that different, except that there is no notion of a mask. Do you notice any problems with the way
+
+00:07:15.000 --> 00:07:21.000
+this thing has been set up? AUDIENCE: For some words, like the,
+
+00:07:21.000 --> 00:07:26.000
+you're going to have a lot of potential output pairs that come out of that. RAMA RAMAKRISHNAN: True, which means
+
+00:07:26.000 --> 00:07:32.000
+that if you have a word like the, the next word-- AUDIENCE: Very hard to predict. RAMA RAMAKRISHNAN: True. So some words may be hard to predict,
+
+00:07:32.000 --> 00:07:38.000
+depending on the last word of the sentence that was the input. That's what you're getting at, yeah.
+
+00:07:38.000 --> 00:07:43.000
+Other concerns? So I want you-- yeah?
+
+00:07:43.000 --> 00:07:50.000
+AUDIENCE: Since you're using contextual on this, the output of the first word is going to have access
+
+00:07:50.000 --> 00:07:55.000
+to the second word. And so it's kind of like cheating. RAMA RAMAKRISHNAN: Bingo.
+
+00:07:55.000 --> 00:08:02.000
+So remember, bingo is a technical term in deep learning, which means great.
+
+00:08:02.000 --> 00:08:07.000
+So if you go to this, as she points out,
+
+00:08:07.000 --> 00:08:15.000
+if you look at the self-attention layer, note, remember, the self-attention layer is the key building block of the transformer block.
+
+00:08:15.000 --> 00:08:20.000
+And so in the self-attention layer, every word, we calculate its contextual embedding
+
+00:08:20.000 --> 00:08:27.000
+by weighting-- weighted averaging of its relationship to all other words in the sentence.
+
+00:08:27.000 --> 00:08:33.000
+So the last word can see the first word, the first word can see the last word, and so on and so forth. But when we are doing next word prediction,
+
+00:08:33.000 --> 00:08:39.000
+this feels problematic because you're peeking into the future.
+
+00:08:39.000 --> 00:08:45.000
+So let's say that you want to predict the next word. If you look at this architecture, what it can simply
+
+00:08:45.000 --> 00:08:53.000
+do, it can simply copy it from the input because it can see the whole sentence. So if I tell you, hey, the cat sat on the mat,
+
+00:08:53.000 --> 00:09:01.000
+if I just gave you, the cat sat on the, can you predict the next word for me? You'd be like, yeah, duh, it's mat.
+
+00:09:01.000 --> 00:09:07.000
+The whole thing becomes challenging only if I say, the cat sat on the dash. Now, predict the dash.
+
+00:09:07.000 --> 00:09:13.000
+So to put it another way, let's say that you want to predict-- you're fed in the first two words,
+
+00:09:13.000 --> 00:09:20.000
+and you want to predict this. This is the right answer for the prediction. The network should only use the first two.
+
+00:09:20.000 --> 00:09:27.000
+However, but because self-attention can see sat, it can see this next word, it will trivially
+
+00:09:27.000 --> 00:09:34.000
+learn to predict the next word to be sat. There is no challenge for it.
+
+00:09:34.000 --> 00:09:41.000
+So this is the key problem. This is the key problem with just using the transformer as is.
+
+00:09:41.000 --> 00:09:48.000
+AUDIENCE: What's our loss function here? RAMA RAMAKRISHNAN: The loss function in all these things is actually the same as before, which is that, for every output that's coming out--
+
+00:09:48.000 --> 00:09:53.000
+so imagine you have just a traditional classification problem, in which you have one output,
+
+00:09:53.000 --> 00:09:59.000
+let's say, dividing-- you're classifying things to 10 categories, like we did with the Fashion MNIST, 10 digits.
+
+00:09:59.000 --> 00:10:04.000
+So you have 10 outputs, and that goes through a softmax. And then you have 10 probabilities.
+
+00:10:04.000 --> 00:10:12.000
+And there we use cross-entropy. So here, for every one of these things, we use cross-entropy.
+
+00:10:12.000 --> 00:10:18.000
+So we take this output, and there's a cross-entropy just for that, plus a cross-entropy for that, and so on and so forth.
+
+00:10:18.000 --> 00:10:23.000
+So we minimize still cross-entropy, but the sum of all these cross-entropies. AUDIENCE: And does it get complicated
+
+00:10:23.000 --> 00:10:28.000
+at all by the fact that we have a large vocabulary size now, So lots of output? RAMA RAMAKRISHNAN: It gets complicated
+
+00:10:28.000 --> 00:10:36.000
+just because there are more things to worry about, compute and so on and so forth. But conceptually, no difference. Whether you have 10,000 or 50,000, it's the same thing.
+
+00:10:36.000 --> 00:10:41.000
+It's just that, instead of classifying an input into one of 10 categories, the inputs themselves
+
+00:10:41.000 --> 00:10:49.000
+are as long as the number of words in your sentence. So each word that comes into your sentence is being classified in one of 50,000 ways.
+
+00:10:49.000 --> 00:10:54.000
+So essentially, you have as many classification problems as you have number of words in a sentence.
+
+00:10:54.000 --> 00:10:59.000
+But at the end of the day, the loss function is the sum of all those things, or to be more precise, the average of all those things.
+
+00:10:59.000 --> 00:11:06.000
+Actually, I think I may have a slide about this, which I may have hidden because I wasn't sure
+
+00:11:06.000 --> 00:11:17.000
+if I would have time. Let's unhide it.
+
+00:11:17.000 --> 00:11:25.000
+And I did not agree ahead of time that we're going to set this up like this. All right, so, yeah, so we still use a classic--
+
+00:11:25.000 --> 00:11:32.000
+cross-entropy loss function. So each word that comes in, so the cross-entropy is actually
+
+00:11:32.000 --> 00:11:40.000
+minus log probability of the right answer. And you may recall this from earlier in the class. So we just do the same thing for cat sat on the, everything,
+
+00:11:40.000 --> 00:11:47.000
+and then we just take the average, 1 over 7. Boom, that's it.
+
+00:11:47.000 --> 00:11:54.000
+So to go back to this problem, so this is the issue. The issue is that we can't allow words to be
+
+00:11:54.000 --> 00:12:01.000
+predicted knowing the future. They should only know about the past words. So what do we do?
+
+00:12:01.000 --> 00:12:08.000
+We have to make a change to the transformer to make it work for next word prediction. So what we're going to do is when we are calculating
+
+00:12:08.000 --> 00:12:14.000
+the contextual embedding for a word, remember, the context embedding for a word is going to be a weighted average of all the other word's
+
+00:12:14.000 --> 00:12:19.000
+embeddings. We will simply give zero weight to future words.
+
+00:12:19.000 --> 00:12:26.000
+If you give zero weight to future words, it's almost as if they don't exist.
+
+00:12:26.000 --> 00:12:32.000
+And this will become clear in a second. So imagine that this is the thing we are going to calculate.
+
+00:12:32.000 --> 00:12:39.000
+These are all-- for every word in the sentence, we are calculating the pairwise attention weight.
+
+00:12:39.000 --> 00:12:45.000
+And you will remember, I went through this with an iPad thing last week. We calculate all the weights.
+
+00:12:45.000 --> 00:12:52.000
+So, for example, to find the-- so all these weights in every row will add up to 1.
+
+00:12:52.000 --> 00:12:58.000
+And so you take the contextual embeddings of the cat sat on the, multiply them by their respective weights that
+
+00:12:58.000 --> 00:13:04.000
+add up to 1, which is the first row of this table. And that gives you the contextual embedding for the word the, so on and so forth.
+
+00:13:04.000 --> 00:13:09.000
+And since we can't look at the future words, all we do is we go take this table
+
+00:13:09.000 --> 00:13:17.000
+and we just zero everything out in red. We just zero everything here out.
+
+00:13:17.000 --> 00:13:25.000
+And then we renormalize so that the remaining cells, the non-zero dot cells, will still add up to one in each row.
+
+00:13:25.000 --> 00:13:30.000
+So what that means is that, if you're actually only looking at the, only this thing is going to play a role.
+
+00:13:30.000 --> 00:13:44.000
+For cat, only this thing is going to play a role. So let's give an example. So to calculate-- to predict on, you'll only look at the words
+
+00:13:44.000 --> 00:13:50.000
+for the cat sat. The rest of it will not be considered at all.
+
+00:13:50.000 --> 00:13:56.000
+Now, the effect of doing all this is that-- by the way, this is called causal self-attention.
+
+00:13:56.000 --> 00:14:01.000
+This tweak is called causal self-attention. It's also called masked self-attention.
+
+00:14:01.000 --> 00:14:08.000
+Just different labels for the same thing. And so what that means is that, when you're looking at the input for the,
+
+00:14:08.000 --> 00:14:15.000
+only the is going to be used to predict cat. When you look, the cat, only these two
+
+00:14:15.000 --> 00:14:24.000
+are going to be used to predict sat and so on, and so on, and so forth.
+
+00:14:24.000 --> 00:14:31.000
+So this thing here, so all we do is we go into our transformer and we just change each attention head
+
+00:14:31.000 --> 00:14:38.000
+to be a causal attention head.
+
+00:14:38.000 --> 00:14:43.000
+And the way it's actually done under the hood is actually very elegant for computational efficiency
+
+00:14:43.000 --> 00:14:52.000
+purposes, but I won't get into it because it gets a bit involved. But the key idea is replace basic plain vanilla attention
+
+00:14:52.000 --> 00:14:59.000
+with causal attention, a.k.a., masked attention. When you do that, boom, suddenly, it
+
+00:14:59.000 --> 00:15:07.000
+starts working for an expert prediction. It can't cheat anymore. And when we do that, we get the transformer causal encoder.
+
+00:15:07.000 --> 00:15:13.000
+And, by the way, the word causal here, there's
+
+00:15:13.000 --> 00:15:19.000
+no connection to causality. So it's just a term.
+
+00:15:19.000 --> 00:15:27.000
+So if you look at the original transformer paper, it was created for translation, for machine translation,
+
+00:15:27.000 --> 00:15:32.000
+English to German, those kinds of use cases. So it had something called an encoder, which we are very
+
+00:15:32.000 --> 00:15:39.000
+familiar with from last week. And then it had something called a decoder. And it was called the encoder-decoder architecture.
+
+00:15:39.000 --> 00:15:45.000
+And we're not going to cover the encoder-decoder architecture because we are not covering machine translation in this class.
+
+00:15:45.000 --> 00:15:50.000
+But I'm mentioning this because this part of the architecture
+
+00:15:50.000 --> 00:15:56.000
+is called a decoder because it uses-- see, here there is a masked attention business
+
+00:15:56.000 --> 00:16:05.000
+going on here. Because it is using this masked attention, it's called decoder. So the transformer encoder is also
+
+00:16:05.000 --> 00:16:11.000
+referred to sometimes as the transformer decoder. But the word decoder has two meanings.
+
+00:16:11.000 --> 00:16:17.000
+It's a synonym for the causal encoder, like we have seen today. It's also used to refer to sequence-to-sequence translation
+
+00:16:17.000 --> 00:16:23.000
+problems for the second part of its architecture. So you just have to keep it-- it will become clear from context
+
+00:16:23.000 --> 00:16:28.000
+what we are talking about. In this course, of course, there is no confusion because we're not going to be looking at translation.
+
+00:16:28.000 --> 00:16:34.000
+We may say decoder, causal encoder. It's the same thing. AUDIENCE: So I thought there were some transformers that
+
+00:16:34.000 --> 00:16:43.000
+use bidirectional things. Did you-- is it different from [INAUDIBLE]? RAMA RAMAKRISHNAN: No, all bidirectional means
+
+00:16:43.000 --> 00:16:48.000
+is that I can see everything. So the encoder we looked at last week,
+
+00:16:48.000 --> 00:16:54.000
+the basic self-attention thing is bidirectional.
+
+00:16:54.000 --> 00:17:00.000
+Basically, all it means is I can look in both directions to see, what are the words there? In causal, you're not using the one in the future, correct?
+
+00:17:00.000 --> 00:17:07.000
+All right, so to summarize where we are,
+
+00:17:07.000 --> 00:17:12.000
+this is what we looked at last week for BERT. And this is the transformer encoder. And we take the same thing.
+
+00:17:12.000 --> 00:17:19.000
+And instead of multi-head attention, we would do causal multi-head attention. We get the decoder, a.k.a., causal encoder.
+
+00:17:19.000 --> 00:17:25.000
+And we use the left for masked prediction.
+
+00:17:25.000 --> 00:17:32.000
+We use the right for next word prediction. All right, so now, instead of having
+
+00:17:32.000 --> 00:17:42.000
+an encoder, if you have a causal encoder, a TCE here, now we can train models for expert prediction using the same exact approach as before.
+
+00:17:42.000 --> 00:17:49.000
+We set up the inputs and the outputs, like I described earlier. We run it through a bunch of stacks, a stack of causal encoders, dense, ReLU, softmax,
+
+00:17:49.000 --> 00:17:56.000
+and so on and so forth. Otherwise, the details don't change, but all important changes go into the attention layer
+
+00:17:56.000 --> 00:18:02.000
+and make it masked or causal.
+
+00:18:02.000 --> 00:18:07.000
+Any questions so far? Yeah?
+
+00:18:07.000 --> 00:18:13.000
+AUDIENCE: This would only apply when we're training the model, not when we're validating or testing the model, right?
+
+00:18:13.000 --> 00:18:19.000
+RAMA RAMAKRISHNAN: So if you give me a sentence after training, the final prediction
+
+00:18:19.000 --> 00:18:25.000
+is the only thing you care about. And by definition, the final prediction will use everything that came before it.
+
+00:18:25.000 --> 00:18:34.000
+So we're OK. Was that your question? AUDIENCE: No, I think the fact that we're zeroing out
+
+00:18:34.000 --> 00:18:40.000
+the weights with feature words, I thought it would apply more when we're training the model and we're trying to minimize the loss as opposed to when
+
+00:18:40.000 --> 00:18:45.000
+we're asking ChatGPT what the next word or sentence should be. RAMA RAMAKRISHNAN: Right.
+
+00:18:45.000 --> 00:18:51.000
+But the point is, when we actually use them, what is the objective? What do we want to do when we actually use them for inference,
+
+00:18:51.000 --> 00:18:57.000
+once we finish training? Our objective is given a particular string. Get me the next word.
+
+00:18:57.000 --> 00:19:03.000
+And to find the next word, you can, in fact, use everything that came before it. And, therefore, without any change to this model,
+
+00:19:03.000 --> 00:19:09.000
+it'll just work for your intended purpose. You don't have to go in there and change it to-- you don't have to unmask it for inference
+
+00:19:09.000 --> 00:19:16.000
+because you don't need to. Yes? AUDIENCE: I have one question that's
+
+00:19:16.000 --> 00:19:22.000
+regarding when we do the puzzle transformers, we are putting certain weights to 0
+
+00:19:22.000 --> 00:19:27.000
+for the words which are to be predicted, and then we [INAUDIBLE]. RAMA RAMAKRISHNAN: No, the words that are in the future. AUDIENCE: Future.
+
+00:19:27.000 --> 00:19:34.000
+RAMA RAMAKRISHNAN: Yeah. AUDIENCE: And then we normalize it. RAMA RAMAKRISHNAN: Correct. AUDIENCE: And if trained a transformer earlier on all the words, all the words together,
+
+00:19:34.000 --> 00:19:41.000
+so won't be there be a difference in weights between both of these? RAMA RAMAKRISHNAN: Between the two ways of training? The weights are going to be very different.
+
+00:19:41.000 --> 00:19:46.000
+And they are two different models. BERT is used for certain things. And this kind of model, which is the basis of GPT,
+
+00:19:46.000 --> 00:19:53.000
+is going to be used for other things. AUDIENCE: We are training it as well like that, by putting [INAUDIBLE] by moving some of the weights to 0.
+
+00:19:53.000 --> 00:20:00.000
+RAMA RAMAKRISHNAN: Correct. So what I'm talking about here is the-- what we are trying to do here is to say,
+
+00:20:00.000 --> 00:20:06.000
+let's say that we want to do next word prediction as the task, as a self-supervised learning task.
+
+00:20:06.000 --> 00:20:12.000
+And we want to train such a model on a vast amount of text data. Well, we can't just use what we did last week because it's not
+
+00:20:12.000 --> 00:20:18.000
+going to work because of the fact you can see the future. Therefore, we make a tweak. And then we build this model. Now the question becomes, OK, what
+
+00:20:18.000 --> 00:20:26.000
+can we do with such a model? We have basically trained two different kinds of models, the one that can see everything, BERT, and the one that can't see the future, which is actually
+
+00:20:26.000 --> 00:20:33.000
+GPT. So what can you do with it? And we're going to come to that.
+
+00:20:33.000 --> 00:20:43.000
+All right, so now once you train such a model, given any input sentence, let's say that the sentence is, it was a dark and.
+
+00:20:43.000 --> 00:20:48.000
+It goes through all these things. And remember what I said earlier.
+
+00:20:48.000 --> 00:20:55.000
+The fact that it's predicting something after just seeing it, we don't really care.
+
+00:20:55.000 --> 00:21:01.000
+What we're really curious about is, what is the next thing it's going to say? And the next thing it's going to say
+
+00:21:01.000 --> 00:21:06.000
+is going to be, basically, what's coming out of this softmax.
+
+00:21:06.000 --> 00:21:12.000
+Does it make sense? We don't care about anything that went before it because we already
+
+00:21:12.000 --> 00:21:18.000
+have a half-formed sentence. And we want to just find the next thing here. So we only care about this.
+
+00:21:18.000 --> 00:21:24.000
+These things will come out of the architecture of the model, but we throw them out. We don't even pay any attention to them.
+
+00:21:24.000 --> 00:21:31.000
+We only look at what's coming out in this one here. And what comes out of that softmax, remember,
+
+00:21:31.000 --> 00:21:36.000
+is a 50,000 way table of probabilities. That's what a softmax is.
+
+00:21:36.000 --> 00:21:45.000
+It's a whole bunch of probabilities that add up to 1. And so it's going to-- and let's say, for example, that you have starting with aardvark all the way to zebra.
+
+00:21:45.000 --> 00:21:52.000
+And these are the probabilities. So it was a dark and, just for kicks,
+
+00:21:52.000 --> 00:21:58.000
+I put stormy as the most-- highest probability number. But these numbers will add up to 1.
+
+00:21:58.000 --> 00:22:04.000
+We have this table. And then what we do is we choose a token from this table.
+
+00:22:04.000 --> 00:22:10.000
+We get to choose. There's a whole bunch of numbers in this table, and we get to choose a token.
+
+00:22:10.000 --> 00:22:16.000
+The simplest thing one can think of is just choose the word that is the most likely, and we choose the word that's most likely here.
+
+00:22:16.000 --> 00:22:23.000
+And we're going to have a whole section on how to choose these things coming up. For now, let's go with the simple option.
+
+00:22:23.000 --> 00:22:30.000
+We're going to just choose the one that's most likely, 0.6. And then we attach it to the input.
+
+00:22:30.000 --> 00:22:36.000
+So now the input has become, it was a dark and stormy. We run it through. And, again, we only care about the last one softmax.
+
+00:22:36.000 --> 00:22:42.000
+We do that, we get another table.
+
+00:22:42.000 --> 00:22:47.000
+And this table turns out-- the table keeps changing because the softmax is different for each time you run it through
+
+00:22:47.000 --> 00:22:53.000
+because the input has changed. So you get a new table, and it turns out the most likely one is night.
+
+00:22:53.000 --> 00:23:02.000
+And then we attached-- so night comes out the other end. And we attached night here, and we keep on going.
+
+00:23:02.000 --> 00:23:09.000
+We can keep on going maybe till we basically tell the model, OK, generate up to 100 tokens and stop.
+
+00:23:09.000 --> 00:23:16.000
+It might stop after 100. Or it might decide, the model may decide, in fact, that when it sees a punctuation, like a period, or an exclamation mark,
+
+00:23:16.000 --> 00:23:22.000
+or something, that's going to stop. And we have control over this when it stops and how it stops.
+
+00:23:22.000 --> 00:23:29.000
+But this is sort of the basic process. And you folks are all very used to it because you've all been playing with ChatGPT and the like.
+
+00:23:29.000 --> 00:23:35.000
+But the basic building block is next word prediction, feed it back to the input, next word prediction,
+
+00:23:35.000 --> 00:23:41.000
+keep on doing it. You keep on doing it, then, suddenly, it's writing entire novels for you.
+
+00:23:41.000 --> 00:23:48.000
+Yeah? AUDIENCE: The longer the initial input is, it's better. It's going to give you a better prediction?
+
+00:23:48.000 --> 00:23:54.000
+RAMA RAMAKRISHNAN: It depends on your objective. So, fundamentally, you have some task
+
+00:23:54.000 --> 00:23:59.000
+you want the thing to do for you. And that task may-- and you need to give it all the information
+
+00:23:59.000 --> 00:24:07.000
+it can possibly find useful. Yeah, so the long-- the more helpful the input, the better. Maybe that's how I would say it.
+
+00:24:07.000 --> 00:24:14.000
+Yeah? AUDIENCE: Would this also apply to something like Google Search or--
+
+00:24:14.000 --> 00:24:20.000
+because they also do next letter prediction too, but with this [INAUDIBLE]. RAMA RAMAKRISHNAN: Yeah, so the Google autocomplete,
+
+00:24:20.000 --> 00:24:26.000
+for example, I don't know if they actually use this kind of model under the hood or not. I just don't know.
+
+00:24:26.000 --> 00:24:34.000
+These things tend to be kept tightly under wraps. If they were to-- if they were using it, my guess is that they-- so I don't know if you folks have
+
+00:24:34.000 --> 00:24:41.000
+seen, recently, over the last few months, they have-- there is a generative AI panel that opens up when you do a Google search.
+
+00:24:41.000 --> 00:24:46.000
+That panel, I suspect, uses this, but I don't know if the default Google autocomplete actually
+
+00:24:46.000 --> 00:24:53.000
+uses it or not because it's very compute heavy. So I don't know what they do.
+
+00:24:53.000 --> 00:24:59.000
+So, yeah, this is what you do. Other questions on this, on the mechanics of it?
+
+00:24:59.000 --> 00:25:05.000
+Yeah? AUDIENCE: For our vocabulary list, I'm assuming it's static [INAUDIBLE].
+
+00:25:05.000 --> 00:25:10.000
+RAMA RAMAKRISHNAN: Yeah, correct. And as you will see here, it's not really a word vocabulary. It's a token vocabulary, but, yes, it
+
+00:25:10.000 --> 00:25:18.000
+is static for a given model. AUDIENCE: And I guess I'm assuming for Google or any other sort of search engine, that
+
+00:25:18.000 --> 00:25:24.000
+wouldn't necessarily be static. And so when it comes to, I guess, base--
+
+00:25:24.000 --> 00:25:29.000
+or even [INAUDIBLE] because the model would be different [INAUDIBLE].
+
+00:25:29.000 --> 00:25:34.000
+RAMA RAMAKRISHNAN: Sort of thinking about what happens to new words and things that are formed?
+
+00:25:34.000 --> 00:25:45.000
+And how does it handle it if the vocabulary is static? There's a very elegant solution that's coming up.
+
+00:25:45.000 --> 00:25:51.000
+All right, so now, in other words, we have learned how to do sequence generation.
+
+00:25:51.000 --> 00:25:56.000
+We already saw that we can do classification with BERT. We can do labeling with BERT, BERT-like models, which
+
+00:25:56.000 --> 00:26:02.000
+are trained on mass prediction. And for generating sequences, now we know how to do it. We just need to use a transformer causal encoder.
+
+00:26:02.000 --> 00:26:13.000
+Now, these kind of models, sequence generation models
+
+00:26:13.000 --> 00:26:19.000
+trained on text sequences using expert prediction, are called autoregressive language models or causal language models.
+
+00:26:19.000 --> 00:26:26.000
+And, of course, the GPT family is perhaps the most well-known example of an autoregressive language
+
+00:26:26.000 --> 00:26:32.000
+model, autoregressive because people who have done econometrics and some regression
+
+00:26:32.000 --> 00:26:39.000
+know the notion of autoregression means that you predict something, and then you use sort of the past predictions as inputs
+
+00:26:39.000 --> 00:26:46.000
+into the next time you predict. So this is the notion of autoregression. You predict, you feed the prediction back,
+
+00:26:46.000 --> 00:26:51.000
+get the next prediction, and keep on cycling through. Yes?
+
+00:26:51.000 --> 00:26:57.000
+AUDIENCE: So when you put it in as inputs into GPT, for example, and it has that--
+
+00:26:57.000 --> 00:27:04.000
+it shows you the next words as it's come in. Is that an indication of it doing this recalculation
+
+00:27:04.000 --> 00:27:09.000
+and what you described? RAMA RAMAKRISHNAN: Correct. That's exactly what's going on. In fact, if you use the API, that
+
+00:27:09.000 --> 00:27:16.000
+is the thing called the streaming API, where it will actually stream each token that's coming out through every pass.
+
+00:27:16.000 --> 00:27:23.000
+And you can actually see everything very clearly. But when you actually work with the web interface, and you see the thing almost as if it's typing,
+
+00:27:23.000 --> 00:27:28.000
+like a human, what I've heard from people-- I don't know if this is true. What I've heard from people is that they can actually
+
+00:27:28.000 --> 00:27:34.000
+do it much faster. They slow it down intentionally to give you the feeling that it's actually coming from a human.
+
+00:27:34.000 --> 00:27:39.000
+So it's like a UX trick to slow it down,
+
+00:27:39.000 --> 00:27:45.000
+to make it feel as if someone is actually typing something on the other end. So when you're interacting with a chatbot, for example,
+
+00:27:45.000 --> 00:27:51.000
+sometimes, you will see it actually typing. Slowly, you can see the bubble and you can see the typing. It's actually intentionally slowed
+
+00:27:51.000 --> 00:28:00.000
+down because you know it's a bot otherwise. So there's a little bit of UX creepiness, maybe, going on.
+
+00:28:00.000 --> 00:28:05.000
+I don't know to what extent this is 100% true and how pervasive it is, but folks who work in the field
+
+00:28:05.000 --> 00:28:11.000
+have told me that this actually is not uncommon.
+
+00:28:11.000 --> 00:28:17.000
+So that's what's going on here. These are language models. And, of course, GPT-3 is an autoregressive language model.
+
+00:28:17.000 --> 00:28:24.000
+And the reason why we have an L in front of the LLM, because it was trained on lots of data with lots of parameters.
+
+00:28:24.000 --> 00:28:30.000
+At some point, it's not a small language model anymore. It's a large language model. Yeah, so it's LLM.
+
+00:28:30.000 --> 00:28:38.000
+Nothing more momentous than that. So as it turns out, GPT-3 uses 96 transformer blocks,
+
+00:28:38.000 --> 00:28:44.000
+96 blocks,. And each block has 96 causal attention heads.
+
+00:28:44.000 --> 00:28:51.000
+And you can see-- you can read the GPT-3 paper. It gives you all the details of the architecture. That is interesting because, GPT-4, they didn't
+
+00:28:51.000 --> 00:28:56.000
+publish the architecture. From GPT-3-- after GPT-3, everything became closed.
+
+00:28:56.000 --> 00:29:02.000
+So we actually don't know what the architecture is, even though there's a lot of speculation on Twitter.
+
+00:29:02.000 --> 00:29:08.000
+But GPT-3, we know exactly what happened. It's 96 blocks. Each has 96 causal attention heads.
+
+00:29:08.000 --> 00:29:13.000
+And then the data was actually, they scraped $30 billion sentences from a whole bunch
+
+00:29:13.000 --> 00:29:22.000
+of sources web text, Wikipedia, a bunch of book databases. And then they basically just took those 30 billion sentences
+
+00:29:22.000 --> 00:29:28.000
+and just trained it exactly, next word prediction. That's it. Now, when they trained GPT-3, I think
+
+00:29:28.000 --> 00:29:33.000
+it cost them a lot of money because things were not as-- we
+
+00:29:33.000 --> 00:29:40.000
+hadn't figured out how to do it as efficiently as we know now, but it was still pretty amazing. And I'll talk about what is so special about GPT-3
+
+00:29:40.000 --> 00:29:48.000
+in just a minute or two. So this is what we have here. And as you folks have seen, the notion of generating text
+
+00:29:48.000 --> 00:29:55.000
+is very powerful because we can obviously generate text. But you can also generate code because code is just text.
+
+00:29:55.000 --> 00:30:00.000
+We can generate documentation for code. We can summarize text. We can answer questions. We can do chatbot. The list goes on.
+
+00:30:00.000 --> 00:30:08.000
+All the excitement we see around GenAI from the time ChatGPT came out is precisely because this simple idea of text in,
+
+00:30:08.000 --> 00:30:14.000
+text out is just so flexible. It's so versatile. It can handle all sorts of use cases.
+
+00:30:14.000 --> 00:30:20.000
+That's why there's so much excitement. By the way, if you're really curious,
+
+00:30:20.000 --> 00:30:26.000
+I would actually recommend seeing this video, where this guy, Andrej Karpathy,
+
+00:30:26.000 --> 00:30:31.000
+builds GPT from scratch. It's a fantastic video.
+
+00:30:31.000 --> 00:30:37.000
+If you have even a little bit of curiosity about how these things are actually built, I would strongly recommend checking it out.
+
+00:30:37.000 --> 00:30:44.000
+And there's also a little blog post where this person-- basically, if you know NumPy, you can actually create GPT-3, GPT, using NumPy
+
+00:30:44.000 --> 00:30:53.000
+without using any frameworks and things like that. So I found it super interesting and helpful to understand
+
+00:30:53.000 --> 00:30:59.000
+what exactly is going on, so if you would like to do this. So now we're going to talk about decoding sampling
+
+00:30:59.000 --> 00:31:07.000
+strategies, which is, I said that when we produce-- when we come up with the softmax for that last token,
+
+00:31:07.000 --> 00:31:14.000
+we have 50,000 choices. What do we pick? As it turns out, to actually get really good performance out
+
+00:31:14.000 --> 00:31:19.000
+of GenAI systems, like ChatGPT, you need to be quite thoughtful about how to decode,
+
+00:31:19.000 --> 00:31:28.000
+how to actually sample from that table. So we'll talk about that for a bit. So first of all, definition, the process of choosing a token from
+
+00:31:28.000 --> 00:31:33.000
+the probability distribution from the-- coming out of the softmax-- I'm sticking this table right here.
+
+00:31:33.000 --> 00:31:40.000
+This is the softmax. This process of choosing it is called decoding. That's the technical term for it.
+
+00:31:40.000 --> 00:31:46.000
+We get this table, we have to decode, meaning we have to pick something from this table. That's called decoding.
+
+00:31:46.000 --> 00:31:51.000
+Now, there are two sort of extreme cases of very highly
+
+00:31:51.000 --> 00:31:58.000
+simple ways to do this. The first thing, of course, is just pick the one-- just pick the word with the highest probability.
+
+00:31:58.000 --> 00:32:05.000
+This is called greedy decoding. So in this case, for example, if stormy
+
+00:32:05.000 --> 00:32:14.000
+is 0.6, the highest probability in this whole table, we just pick stormy. So that is the obvious extreme simple case.
+
+00:32:14.000 --> 00:32:22.000
+The other thing we can do, which is also super simple, is that, because we have a probability table here, we can just reach into the table and sample a word out
+
+00:32:22.000 --> 00:32:28.000
+of it in proportion to its probability, which means that, if you have this table
+
+00:32:28.000 --> 00:32:36.000
+and you're sampling from it, if you sample from it 100 times, 60 times, you probably get stormy because the probability is 0.6.
+
+00:32:36.000 --> 00:32:42.000
+But some small fraction of the time, you may get strange things, like aardvark, and zebra, and so on and so forth.
+
+00:32:42.000 --> 00:32:48.000
+You're just literally doing random sampling. That's a fine way to do it too.
+
+00:32:48.000 --> 00:32:56.000
+Right. There's nothing wrong with that. So these are both options. So the key thing you need to remember is that--
+
+00:32:56.000 --> 00:33:02.000
+which one you pick. And there are some variations on it, which we'll get to in a moment. What you pick, which way to decode your pick,
+
+00:33:02.000 --> 00:33:08.000
+really depends on what your task is, what you're trying to use the system for, the LLM for.
+
+00:33:08.000 --> 00:33:13.000
+So the broad thing to remember is that, if you're working on questions
+
+00:33:13.000 --> 00:33:21.000
+for which the factual accuracy of the response is really important and/or you want the output to be
+
+00:33:21.000 --> 00:33:28.000
+deterministic, meaning every time you ask it a particular question, you really want the same answer back.
+
+00:33:28.000 --> 00:33:33.000
+You can imagine a customer call support agent, where the two different customers ask the same question,
+
+00:33:33.000 --> 00:33:39.000
+and they get different answers. You don't want that. So you want deterministic outputs.
+
+00:33:39.000 --> 00:33:44.000
+So in those situations, you should use greedy decoding. It's a good starting point because you will get--
+
+00:33:44.000 --> 00:33:52.000
+you won't get any random stuff because, for any given input sentence, the softmax that comes out of the table
+
+00:33:52.000 --> 00:33:57.000
+is not going to change. It's the same table. And if you're always picking the highest number in the table,
+
+00:33:57.000 --> 00:34:03.000
+that's not going to change either. So guaranteed determinism.
+
+00:34:03.000 --> 00:34:08.000
+And I've found that for reasoning questions and things where you're asking questions, math questions, reasoning
+
+00:34:08.000 --> 00:34:15.000
+questions, logic questions, you should really sort of keep it as greedy as possible in my experience.
+
+00:34:15.000 --> 00:34:20.000
+Now, there are other situations where random sampling is actually a better option.
+
+00:34:20.000 --> 00:34:25.000
+If you're doing creative things, write a poem, write a haiku, write a screenplay, things like that, you
+
+00:34:25.000 --> 00:34:32.000
+do want a lot of creativity, in which case, actually, randomness is your friend. You get a lot of different varieties of responses,
+
+00:34:32.000 --> 00:34:38.000
+diversity of responses. All that is really good. The price you pay for it is that, you lose determinism,
+
+00:34:38.000 --> 00:34:44.000
+the outputs are going to be stochastic. They're going to be random. They're going to vary from the same question. The answer is going to vary again and again.
+
+00:34:44.000 --> 00:34:50.000
+But in many cases, maybe it's OK. You don't care. So that's how, roughly, we think about it.
+
+00:34:50.000 --> 00:34:57.000
+The other one I want to say is that the diversity of response is also important because, if you imagine a chatbot, if you
+
+00:34:57.000 --> 00:35:02.000
+ask questions, if the chatbot always responds in the same stilted robotic fashion,
+
+00:35:02.000 --> 00:35:09.000
+it kind of starts to get annoying. You want some variation in the output because a human will never give you the same thing back.
+
+00:35:09.000 --> 00:35:17.000
+Though I must say that when I interact with call center agents, I think they're just cutting and pasting from a text library, so it does look kind of robotic.
+
+00:35:17.000 --> 00:35:24.000
+So maybe we are already kind of used to this. But anyway, so those are some of the things to keep in mind. Yeah?
+
+00:35:24.000 --> 00:35:33.000
+AUDIENCE: If you're using random sampling, do you end up with a better estimation of the uncertainty and probabilities that are more calibrated,
+
+00:35:33.000 --> 00:35:39.000
+in the sense that the table that you end up at the end is the real probability that you observe
+
+00:35:39.000 --> 00:35:44.000
+from the words in your corpus? RAMA RAMAKRISHNAN: The table doesn't change, regardless of how you sample it.
+
+00:35:44.000 --> 00:35:51.000
+The table is a starting point for sampling. All decoding is about what token from the table
+
+00:35:51.000 --> 00:35:56.000
+you're going to pull out. AUDIENCE: Oh, so it doesn't impact the loss function? RAMA RAMAKRISHNAN: No.
+
+00:35:56.000 --> 00:36:02.000
+Yeah, all those things are fixed. You literally get the table, and then you literally can forget how you got the table.
+
+00:36:02.000 --> 00:36:09.000
+And now decoding starts. AUDIENCE: Is that the reason why ChatGPT would generate
+
+00:36:09.000 --> 00:36:15.000
+a different answer given the same prompt if we run it again and again? Because they are using random sampling? RAMA RAMAKRISHNAN: Correct.
+
+00:36:15.000 --> 00:36:22.000
+That's exactly why. And we'll see-- I'll do a demo of it very shortly because you can actually manipulate it.
+
+00:36:22.000 --> 00:36:28.000
+AUDIENCE: If you do the prediction word-by-word, is there a way to make it resilient to mistakes?
+
+00:36:28.000 --> 00:36:35.000
+If you say, the night was dark and aardvark, that can mess up the next word, right? RAMA RAMAKRISHNAN: It can totally mess it up.
+
+00:36:35.000 --> 00:36:40.000
+AUDIENCE: So how does it get itself back on track? RAMA RAMAKRISHNAN: It cannot. And so great question.
+
+00:36:40.000 --> 00:36:46.000
+And we'll look at an example of things going off the rails in just a second. Yeah?
+
+00:36:46.000 --> 00:36:51.000
+AUDIENCE: Is this how Bing works, where you can slide between being more creative and more
+
+00:36:51.000 --> 00:36:57.000
+accurate? RAMA RAMAKRISHNAN: Yeah, exactly. So Bing has this creative, balanced, precise something. They're basically under the hood.
+
+00:36:57.000 --> 00:37:03.000
+They're manipulating some of the-- we're going to look at some of those parameters in just a moment. They're just manipulating it for you.
+
+00:37:03.000 --> 00:37:10.000
+But if you use the API, you can manipulate it directly.
+
+00:37:10.000 --> 00:37:17.000
+All right, so here is the basic thing to remember about random sampling.
+
+00:37:17.000 --> 00:37:23.000
+So our hope is that, for any given sentence, we think that there is probably some set
+
+00:37:23.000 --> 00:37:29.000
+of good answers for the next word and a whole bunch of bad answers, intuitively.
+
+00:37:29.000 --> 00:37:34.000
+So we want the probability of the good stuff.
+
+00:37:34.000 --> 00:37:41.000
+We want-- you can imagine a distribution as going like that. There is the head of the distribution, the first few words in the distribution, if you sort them
+
+00:37:41.000 --> 00:37:49.000
+from high to low probability. And then there is all the long tail of kind of inappropriate-- not inappropriate, irrelevant words.
+
+00:37:49.000 --> 00:37:56.000
+So our hope is that the model is so good that, for any given input phrase, it basically concentrates the output
+
+00:37:56.000 --> 00:38:02.000
+probability in the softmax, so just a few good words, and sort of, kind of zeroes out everything else.
+
+00:38:02.000 --> 00:38:07.000
+That is the ideal scenario because, in that scenario, if you do random sampling, by definition,
+
+00:38:07.000 --> 00:38:16.000
+you'll pick something from the high quality head of the distribution, and life is good. Now, we want random sampling to sample from the head
+
+00:38:16.000 --> 00:38:26.000
+and not from the tail. That's the key point. And what do I mean by head and tail? Let's be very clear.
+
+00:38:26.000 --> 00:38:31.000
+So imagine you have-- take the table that we looked at,
+
+00:38:31.000 --> 00:38:38.000
+the softmax table, which went from, what, about aardvark to zebra. And let's say we sort the table based on high to low probabilities.
+
+00:38:38.000 --> 00:38:43.000
+So maybe what's going to happen is that stormy is going to have a probability of, I don't know,
+
+00:38:43.000 --> 00:38:52.000
+0.6. And I think, if I remember right, a night had a probability of 0.3.
+
+00:38:52.000 --> 00:39:00.000
+And then there were a whole bunch of other words, all the way to the 50,000th word.
+
+00:39:00.000 --> 00:39:07.000
+From highest low probability, so this is what I'm-- so you can think of this as like a probability distribution
+
+00:39:07.000 --> 00:39:13.000
+And so, basically, what we are saying here is that this is the head of the distribution,
+
+00:39:13.000 --> 00:39:20.000
+while this long tail is the tail of the distribution. And we want our system to grab something from the head
+
+00:39:20.000 --> 00:39:26.000
+and not from the tail because the head is the stuff that's actually the relevant, useful, good stuff.
+
+00:39:26.000 --> 00:39:33.000
+That's really what we're trying to do here. Does it make sense? So to come back to this--
+
+00:39:33.000 --> 00:39:39.000
+and here is the most important point
+
+00:39:39.000 --> 00:39:44.000
+to remember about this slide. While the probability of choosing any individual word
+
+00:39:44.000 --> 00:39:54.000
+in this long tail is pretty small-- for any one word, it's pretty small-- the probability of choosing some word from the tail is high.
+
+00:39:54.000 --> 00:40:01.000
+So to go back to this thing here, yeah, so in this particular example, 0.6 plus 0.3,
+
+00:40:01.000 --> 00:40:09.000
+there is a 0.9 probability it's going to be either stormy or night. But there is a 10% probability it's going to be one of these words.
+
+00:40:09.000 --> 00:40:21.000
+And who knows what that word might-- it's going to be. It might be some random nonsense word. So what that means is then this goes to a point from before.
+
+00:40:21.000 --> 00:40:27.000
+If the LLM happens to sample a token from the tail, which is not good, it won't be able to recover from its mistake.
+
+00:40:27.000 --> 00:40:33.000
+It'll just go off the rails, which is why every word that gets generated, it's really important to get it right
+
+00:40:33.000 --> 00:40:39.000
+because it can't recover very often. AUDIENCE: Is there a technical way
+
+00:40:39.000 --> 00:40:46.000
+to define the difference between the head and the tail? RAMA RAMAKRISHNAN: No. [CHUCKLING] It's like this common thing people use.
+
+00:40:46.000 --> 00:40:52.000
+And the reason why it's not is because it's so problem dependent as to what the--
+
+00:40:52.000 --> 00:40:59.000
+basically, you're saying that for any particular problem, I think, depending on the question, the right number of words is probably 20.
+
+00:40:59.000 --> 00:41:05.000
+For the same-- for a different question, maybe it's 40. For a totally different model, for the same question, maybe 10.
+
+00:41:05.000 --> 00:41:13.000
+So because of that variability, we just can't figure it out. So all right, and I'll show you this, how to do this,
+
+00:41:13.000 --> 00:41:20.000
+in just a moment. So just for kicks, I went in to GPT 3.5.
+
+00:41:20.000 --> 00:41:25.000
+And then I said, students at the MIT Sloan School of Management are?
+
+00:41:25.000 --> 00:41:32.000
+And I said, predict the next word. So it turns out, invited is the most likely next word,
+
+00:41:32.000 --> 00:41:39.000
+followed by given, expected, required, and able. These are the top five words.
+
+00:41:39.000 --> 00:41:45.000
+And the probability is 3%, 2%, pretty small probabilities. But then the words that are below it,
+
+00:41:45.000 --> 00:41:51.000
+the remaining whatever, 50,000 odd words, are even lower. So here, the most likely word is invited.
+
+00:41:51.000 --> 00:41:58.000
+So what I did is I went in there and said, OK, let me try again now with, students at the MIT Sloan School of Management are invited.
+
+00:41:58.000 --> 00:42:04.000
+And now autocomplete that. Find me the next thing. So it comes back with-- see, now, this is my new prompt, students
+
+00:42:04.000 --> 00:42:09.000
+at the MIT School of Management invited to submit their original white papers to the annual MIT something.
+
+00:42:09.000 --> 00:42:16.000
+It seems reasonable. It doesn't seem bad. It seems reasonable. Now let's mess it up a bit.
+
+00:42:16.000 --> 00:42:22.000
+So now I go in there, and I noticed that the word masters and the word spending
+
+00:42:22.000 --> 00:42:27.000
+were much lower probability than these top five words. I just mucked around until I found these things.
+
+00:42:27.000 --> 00:42:34.000
+So this is only 0.05%. This is 0.11%. So these are clearly in the tail.
+
+00:42:34.000 --> 00:42:40.000
+They're not the most likely. So I said, what's going to happen if I actually force it to use masters?
+
+00:42:40.000 --> 00:42:48.000
+And then I force it to use spending. This is what you get. Students at the MIT School of Management are masters of chaos.
+
+00:42:48.000 --> 00:42:54.000
+[CHUCKLING] They routinely blow past deadlines, fracture. And then I couldn't take it anymore.
+
+00:42:54.000 --> 00:43:00.000
+I stopped it. [CHUCKLING] A single word.
+
+00:43:00.000 --> 00:43:06.000
+And then I said, students, students at MIT School of Management, are spending, which is the other unlikely word, the semester learning
+
+00:43:06.000 --> 00:43:12.000
+life skills-- so far, it looks promising-- through knitting socks. [LAUGHTER]
+
+00:43:12.000 --> 00:43:17.000
+I'm not making this stuff up. This is GPT 3.5.
+
+00:43:17.000 --> 00:43:25.000
+So, yes, it will go off the rails. You have to be super careful. And so the way we sort of tame random sampling
+
+00:43:25.000 --> 00:43:32.000
+to make it work for us-- yeah? AUDIENCE: Do you think that these sentences refers--
+
+00:43:32.000 --> 00:43:40.000
+the past-- the master of chaos routinely blow past deadlines, you think is something that it was in the training set?
+
+00:43:40.000 --> 00:43:45.000
+RAMA RAMAKRISHNAN: Yeah, that is-- the thing is, it's basically doing some very rough
+
+00:43:45.000 --> 00:43:54.000
+and approximate pattern matching from all the training data it was trained on. So it doesn't mean, for example, that on the mit.edu website,
+
+00:43:54.000 --> 00:44:00.000
+on the collection of sites, that, actually, there were text saying that, yeah, MIT Sloan students were
+
+00:44:00.000 --> 00:44:06.000
+doing all this crazy stuff. It's probably more like a whole bunch of college,
+
+00:44:06.000 --> 00:44:11.000
+university websites probably had some content like that. Maybe there was a bunch of Reddit people posting stuff like that.
+
+00:44:11.000 --> 00:44:17.000
+So it's just doing some rough pattern matching. It's basically looking-- the thing is, you have to remember, always, with large language models, what
+
+00:44:17.000 --> 00:44:23.000
+it's trying to give you, it's giving you a response that is not implausible.
+
+00:44:23.000 --> 00:44:30.000
+There is no guarantee of correctness. There is no accuracy, nothing like that. It's giving you a probabilistically plausible
+
+00:44:30.000 --> 00:44:35.000
+response. That's it. Now, us Sloanies being Sloanies, we look at stuff like this
+
+00:44:35.000 --> 00:44:43.000
+and we get offended. So we are imputing our values onto each generation, but it doesn't know and it doesn't care.
+
+00:44:43.000 --> 00:44:50.000
+So, in fact, when I typed in something like, list all the awards that Professor Ramakrishnan has won,
+
+00:44:50.000 --> 00:44:57.000
+it gave me an amazing list of awards. Apparently, I won this and I won that. I won-- now, none of it is true, to which
+
+00:44:57.000 --> 00:45:02.000
+a student said, not yet. [LAUGHTER] So I had the TA make a note of that fine person's name.
+
+00:45:02.000 --> 00:45:08.000
+[LAUGHTER] Yeah, so that's what's going on.
+
+00:45:08.000 --> 00:45:15.000
+Yeah? AUDIENCE: I get the sense, maybe there's-- RAMA RAMAKRISHNAN: Could you use the microphone, please?
+
+00:45:15.000 --> 00:45:21.000
+AUDIENCE: I get the sense that maybe there's some sort of sliding window, that somehow weighting
+
+00:45:21.000 --> 00:45:27.000
+later words more strongly than earlier words, given how far out-- because they do have the context of students
+
+00:45:27.000 --> 00:45:33.000
+at MIT should have steered it in a certain direction, even with the presence of the word masters.
+
+00:45:33.000 --> 00:45:42.000
+So is there something like that happening? RAMA RAMAKRISHNAN: No, it is just-- the thing is, think about the training process. And the training process, we gave it sentence fragments.
+
+00:45:42.000 --> 00:45:48.000
+And we asked her to predict the next word. Now, clearly, the more you know about the input that's coming
+
+00:45:48.000 --> 00:45:54.000
+and the longer the input, the more clues you have to figure out what the right next word prediction is going to be.
+
+00:45:54.000 --> 00:46:00.000
+If I say, the capital of, you'll be like, I don't know. It's got to be a country, I guess, or a state,
+
+00:46:00.000 --> 00:46:08.000
+but I don't know anything more than that. But if I say, the capital of France is, dramatic narrowing of the cone of uncertainty.
+
+00:46:08.000 --> 00:46:15.000
+So that's basically what's going on. And, in fact, there's a very beautiful expression I've heard, which is that what elements do, they
+
+00:46:15.000 --> 00:46:21.000
+call it subtractive sculpting. So what I mean by that is it's sort of like, when you start,
+
+00:46:21.000 --> 00:46:28.000
+it's like this big block of marble. And then every word chips away at the marble. And then when you're done, it's kind of pretty clear.
+
+00:46:28.000 --> 00:46:34.000
+It's David inside the marble. That's sort of what's going on.
+
+00:46:34.000 --> 00:46:41.000
+All right, so to come back to this, what can we do? We can-- there are three ways in which you can tune random sampling to make it work for you.
+
+00:46:41.000 --> 00:46:48.000
+The first way and the idea of all these things is that you have some probability distribution.
+
+00:46:48.000 --> 00:46:54.000
+We are now going to sort of manually focus on the head. And then we're going to kill everything else,
+
+00:46:54.000 --> 00:47:00.000
+and only focus on the head and sample from that head, which immediately begs the question, how will you decide what the head is?
+
+00:47:00.000 --> 00:47:07.000
+And that was sort of Elena's question from before. How will you decide what the head is? So one way we do that is to say, you know what?
+
+00:47:07.000 --> 00:47:13.000
+I know we have 50,000 words in the vocabulary. I don't care. Each time, I'm only going to pick the top K words.
+
+00:47:13.000 --> 00:47:18.000
+K could be 10, 20, 30, 40, 50. That's very problem dependent. I'm going to pick the top 20 words,
+
+00:47:18.000 --> 00:47:23.000
+and I'm going to ignore everything else and only sample from the top 10 or the top 20. That's called top-k sampling.
+
+00:47:23.000 --> 00:47:29.000
+And so the way it works is that let's say this is your whole distribution. And I just stopped at red instead of going all the way
+
+00:47:29.000 --> 00:47:34.000
+to 50,000. And then you see and you decide, let's say that you want k to be 2.
+
+00:47:34.000 --> 00:47:41.000
+So you just grab the top two words, k equals 2. And then you renormalize the probability so they add up to 1.
+
+00:47:41.000 --> 00:47:46.000
+So 0.6 and 0.2, renormalize, it becomes 0.75 and 0.25.
+
+00:47:46.000 --> 00:47:52.000
+And now, just imagine that this is the new softmax table that you're sampling from. And you grab a number from--
+
+00:47:52.000 --> 00:48:00.000
+I'm sorry, a word from here and you're done. That's called top-k sampling, very commonly used.
+
+00:48:00.000 --> 00:48:08.000
+But it has a small shortcoming, which is that it basically assumes that this k that you've come up with, let's say 20,
+
+00:48:08.000 --> 00:48:16.000
+every input sentence, the right number of words in the head is 20, which seems-- obviously, it's not a well-supported assumption.
+
+00:48:16.000 --> 00:48:22.000
+It's just an assumption. So then the question becomes, can we do better? Because what you really want is you
+
+00:48:22.000 --> 00:48:28.000
+want the words that you pick to have the bulk of the probabilities, as much probability as possible.
+
+00:48:28.000 --> 00:48:34.000
+You don't really care how many words are inserted, as long as, together, they have a lot of probability, which brings us
+
+00:48:34.000 --> 00:48:40.000
+to something called top-p sampling, also called nucleus sampling, where instead of deciding on the number of words
+
+00:48:40.000 --> 00:48:46.000
+we're going to pick every time, we decide, you know what? We're just going to choose all the words, such
+
+00:48:46.000 --> 00:48:52.000
+that the probability of such words that we have chosen is at least p. Sometimes, it may be just two words.
+
+00:48:52.000 --> 00:48:58.000
+Sometimes, it may be 20 words. We don't care. And then we sample from it.
+
+00:48:58.000 --> 00:49:03.000
+So here, same thing here. Let's say you go with p equals 0.9.
+
+00:49:03.000 --> 00:49:09.000
+So 0.6 plus 0.2, 0.8 plus 0.1. 0.9. Boom, we have hit 0.9. We stop.
+
+00:49:09.000 --> 00:49:16.000
+And then we grab these three words, and then we renormalize them to get this thing. And then, boom, we sample from it.
+
+00:49:16.000 --> 00:49:23.000
+So this, actually, is even more effective in my opinion because it sort of fluctuates. It doesn't hardcode the number of words you think is important.
+
+00:49:23.000 --> 00:49:29.000
+Was there a question? Yeah. AUDIENCE: What if, let's say, 0.9 ended up--
+
+00:49:29.000 --> 00:49:34.000
+if foggy was 0.12, would it only be 0.1 from foggy? RAMA RAMAKRISHNAN: Yeah, what it does is--
+
+00:49:34.000 --> 00:49:43.000
+so you give it a point, and what it's going to do is it's going to keep adding words till it just crosses that number.
+
+00:49:43.000 --> 00:49:50.000
+Yeah? AUDIENCE: I was thinking, can't you just set a threshold for the words that
+
+00:49:50.000 --> 00:49:58.000
+don't pick a word below a certain probability? This stormy, what if stormy was 0.89 and then the other one is
+
+00:49:58.000 --> 00:50:04.000
+just 0.10 [INAUDIBLE] so you pick two words? RAMA RAMAKRISHNAN: Yeah, you can do that. And, in fact, what you can do is you can always say,
+
+00:50:04.000 --> 00:50:11.000
+I want to pick a word, which is the most likely word. You can do that. But if you say, I want a word--
+
+00:50:11.000 --> 00:50:17.000
+only consider words whose probabilities are at least something, then, basically, what you're saying is that I'm just going to keep on doing.
+
+00:50:17.000 --> 00:50:26.000
+And then we draw a line here. But the problem is, you don't know how many words have crept over your threshold.
+
+00:50:26.000 --> 00:50:33.000
+You might, for example, find that-- to go to your example, maybe-- you said 0.9 is the threshold. Maybe there are a whole bunch of-- there was a word at 0.89
+
+00:50:33.000 --> 00:50:39.000
+that you just missed because it didn't make the threshold. You'll be like oh no, I should have made it 0.89. So there's no right answer, unfortunately.
+
+00:50:39.000 --> 00:50:46.000
+But these are exactly-- this is exactly the kind of thinking that brought us these kinds of ways to tune these things.
+
+00:50:46.000 --> 00:50:53.000
+Sort of the foundation here is that-- the realization that we cannot sort of a priori decide what
+
+00:50:53.000 --> 00:50:59.000
+the right number of words is. So we have to find heuristics to try to do these things. So in practice, people try all these methods.
+
+00:50:59.000 --> 00:51:04.000
+In fact, you can do both. You can do-- you can set up so that you can do top-p and top-k at the same time.
+
+00:51:04.000 --> 00:51:10.000
+Basically, you're saying, grab words until you cross the probability or you
+
+00:51:10.000 --> 00:51:19.000
+cross k, whichever is earlier. So those are two methods people use heavily.
+
+00:51:19.000 --> 00:51:26.000
+The third method is called distribution. I'm sorry, temperature. And the idea of temperature is that, in top-k and top-p,
+
+00:51:26.000 --> 00:51:32.000
+it's sort of-- we have to decide on a number up front, k or p. And then we just draw the line and look at the words
+
+00:51:32.000 --> 00:51:40.000
+that pass the threshold. Temperature is like a softer way to do the same thing. It's a softer way to emphasize the head more than the tail.
+
+00:51:40.000 --> 00:51:53.000
+So I think iPad, all right.
+
+00:51:53.000 --> 00:52:06.000
+So the idea of temperature is, remember, when we have this, whoops, softmax, so aardvark all the way to zebra,
+
+00:52:06.000 --> 00:52:13.000
+you have all these probabilities. Now, remember, where did we get these probabilities? These probabilities came from a softmax.
+
+00:52:13.000 --> 00:52:18.000
+So what is a softmax? We basically had all these nodes,
+
+00:52:18.000 --> 00:52:27.000
+say 50,000 nodes in some output layer. And these were just numbers. Let's just call them a1 through a 50,000.
+
+00:52:27.000 --> 00:52:36.000
+And then we ran it through a softmax function. And what did it do? It basically did e raised to a1, e raised to a2, all the way to e
+
+00:52:36.000 --> 00:52:42.000
+raised to a, let's call it n. And then it divided it by the sum of all these things to get the probabilities.
+
+00:52:42.000 --> 00:52:47.000
+So this number became e raised to a1 divided by the sum of all
+
+00:52:47.000 --> 00:52:54.000
+the e raised to a's. So e raised to n divided by e raised to a1 plus e raised to a2
+
+00:52:54.000 --> 00:53:00.000
+and so on and so forth. So this is how softmax works. I'm just refreshing your memory from a few weeks ago.
+
+00:53:00.000 --> 00:53:08.000
+Now, what temperature does is that-- let me just write it a little easier.
+
+00:53:08.000 --> 00:53:15.000
+So e raised to a1 plus e raised to a2 plus all the way, n.
+
+00:53:15.000 --> 00:53:24.000
+What it does is it introduces a new parameter here called temperature, which is that we divide everything
+
+00:53:24.000 --> 00:53:43.000
+here by T. And the effect of adding this little knob
+
+00:53:43.000 --> 00:53:49.000
+called temperature here is very interesting. So let's assume for a second that T
+
+00:53:49.000 --> 00:53:54.000
+is a very, very small number. Assume that T is pretty close to 0, very small number.
+
+00:53:54.000 --> 00:54:01.000
+So if T is close to 0, what's going to happen
+
+00:54:01.000 --> 00:54:07.000
+is that, since it's in the denominator here, all these numbers, all these numbers
+
+00:54:07.000 --> 00:54:13.000
+are going to become really big because T is really small. If a1 happens to be a positive number,
+
+00:54:13.000 --> 00:54:19.000
+it's going to become really big. If a1 is a negative number, it's going to be a really, really small negative number. Now, in particular, what's going to happen
+
+00:54:19.000 --> 00:54:26.000
+is the biggest of all the a numbers, it was already big. Now it's going to get massive, which
+
+00:54:26.000 --> 00:54:32.000
+means that its probability is going to dominate everything else because you're taking a really big number and doing
+
+00:54:32.000 --> 00:54:38.000
+e raised to that number. So what's going to happen is that-- wait, what?
+
+00:54:38.000 --> 00:54:56.000
+is this? So if T is close to 0, the biggest a--
+
+00:54:56.000 --> 00:55:06.000
+hold on one second. The word corresponding to the biggest a
+
+00:55:06.000 --> 00:55:12.000
+will have a probability of 1 or close to 1.
+
+00:55:12.000 --> 00:55:19.000
+And since all the probabilities have to add up to 0, which means that everything else is going to be 0. So the biggest a will have a probability of 1.
+
+00:55:19.000 --> 00:55:24.000
+Everything else is going to have 0. So reducing temperature close to 0 means that the probability distribution
+
+00:55:24.000 --> 00:55:29.000
+is going to peak at the biggest word, and everything is going to become 0. So in practice, what that means is
+
+00:55:29.000 --> 00:55:38.000
+that if you look at something like this, if you apply temperature here, what's going to happen
+
+00:55:38.000 --> 00:55:46.000
+is that stormy's thing is going to get something like 0.999 and everything else is going to get wiped out.
+
+00:55:46.000 --> 00:55:54.000
+It's going to get really small, it's going to get even smaller, and so on and so forth.
+
+00:55:54.000 --> 00:56:01.000
+And so when T is exactly 0, basically, what that means is that this is going to be exactly 9-- 1, and everything is going to just get 0.
+
+00:56:01.000 --> 00:56:10.000
+So when one of them is 1 and everything else is 0, when you do sampling from it, you're just picking the big number, which means that it becomes greedy decoding.
+
+00:56:10.000 --> 00:56:16.000
+So that is the value of having temperature as a knob. Conversely, if you take temperature T
+
+00:56:16.000 --> 00:56:22.000
+and make it bigger and bigger, as opposed to smaller and smaller, this distribution is
+
+00:56:22.000 --> 00:56:27.000
+going to become flat, meaning all the words are going to have the same probability.
+
+00:56:27.000 --> 00:56:34.000
+So any one of these words becomes equally likely. So T close to 0, the biggest word gets picked.
+
+00:56:34.000 --> 00:56:39.000
+T close to, say-- exceeds 1, goes to 1.52, any word becomes likely.
+
+00:56:39.000 --> 00:56:44.000
+It becomes truly random. So that is the effect of temperature.
+
+00:56:44.000 --> 00:56:50.000
+And this knob, you can actually tune it.
+
+00:56:50.000 --> 00:56:57.000
+All right, so this is called-- I'm at platform.openai.com.
+
+00:56:57.000 --> 00:57:03.000
+It's called the OpenAI Playground. And in this playground, you can actually put in all the sentences you want, you can choose the model,
+
+00:57:03.000 --> 00:57:11.000
+and then you can-- it will actually tell you what the softmax output is. It's very handy. So this is where I said--
+
+00:57:11.000 --> 00:57:17.000
+so here are a few things I want to draw your attention to. The first one is, you see temperature here? The default is 1.
+
+00:57:17.000 --> 00:57:22.000
+If you make it 0, it becomes greedy decoding. But you can make it more than 1 if you want.
+
+00:57:22.000 --> 00:57:30.000
+It will give you all kinds of crazy stuff, as you will see in a second. And then they don't have top-k.
+
+00:57:30.000 --> 00:57:37.000
+They don't have support for top-k, OpenAI, but they do have support for top-p. You can put p here in this thing,
+
+00:57:37.000 --> 00:57:43.000
+and I'll ignore these things. You can read the documentation to understand those things, but you can actually ask it to show the probabilities.
+
+00:57:43.000 --> 00:57:48.000
+So I'm going to ask it to show all the probabilities. And I'm also going to tell it, don't go nuts.
+
+00:57:48.000 --> 00:57:55.000
+Just give me like a few outputs. Let's just call it 30. And now I'm going to enter some sentences for us
+
+00:57:55.000 --> 00:58:07.000
+to see what's going on. So let's enter the same sentence as before, students at the MIT Sloan School of Management.
+
+00:58:07.000 --> 00:58:13.000
+Or I think that's what we had. So Submit.
+
+00:58:13.000 --> 00:58:20.000
+So this is what's filling out. Now, you go click on this word, you get all the probabilities.
+
+00:58:20.000 --> 00:58:26.000
+Pretty cool. So you can see invited, given, expected. These are all some of the things we had.
+
+00:58:26.000 --> 00:58:32.000
+And so what you can do is you can go in there and say, here, clearly--
+
+00:58:32.000 --> 00:58:39.000
+aking? What is that? That's very weird. So I'm going to nuke it again.
+
+00:58:39.000 --> 00:58:48.000
+I'm just going to check to make sure that I use the same sentence as before. It's very brittle. Students, MIT School of Management are--
+
+00:58:48.000 --> 00:58:57.000
+Oh, I know what it is. GPT 3.5.
+
+00:58:57.000 --> 00:59:04.000
+So let's try that again.
+
+00:59:04.000 --> 00:59:09.000
+So invited, 3.18. That's what we had? Invited 3.19, 3.9. Close enough.
+
+00:59:09.000 --> 00:59:14.000
+So this is what we have. And now, if you wanted to force it to choose invited here,
+
+00:59:14.000 --> 00:59:20.000
+you just go in there and make the temperature 0. Temperature 0 means it's always going to pick
+
+00:59:20.000 --> 00:59:26.000
+the best one, greedy decoding. So you can hit it again. And it better give you invited.
+
+00:59:26.000 --> 00:59:32.000
+See? It's giving you invited. So that's how we manipulate it using temperature.
+
+00:59:32.000 --> 00:59:40.000
+You can also ask it-- you can also manipulate top-p. You can do all these things. But so people actually use it very heavily for debugging.
+
+00:59:40.000 --> 00:59:47.000
+And when they're playing with a bunch of data with a model for that particular use case, you just play with it to get a sense for what kinds of probability distributions you see.
+
+00:59:47.000 --> 00:59:54.000
+And then you can fine-tune it using that knowledge. So, yeah, check this out.
+
+00:59:54.000 --> 00:59:58.000
+Oh, I said that, if the temperature goes above 1 to a higher number, every word in that 50,000 becomes sort 1:00:03 of equally likely, which means it's going to produce garbage. So let's actually see garbage production in action. [CHUCKLING] 1:00:09 So all right, let's just nuke this. And I'm going to take the temperature and max it. 1:00:14 I'm going to call it 2, which means that literally anything is 1:00:20 possible. Submit. 1:00:25 Ladies and gentlemen, I present to you a modern large language model. [LAUGHTER] 1:00:31 [SIDE CONVERSATIONS] Isn't it shocking? 1:00:38 Because when we work with these language models, we have-- when we see it doing some smart things, we always ascribe some level of interesting abilities, 1:00:45 and intelligence, and so on. And then you realize, all I had to go in, go in there and change one parameter, and it's garbage. 1:00:52 So you can see the amount of garbage it's showing, just by twiddling one parameter. So you have to be in production use cases-- 1:00:59 when you're building applications on top of these large language models, you've got to be very, very careful with these parameters. 1:01:04 So pay attention. All right, so what did I have next? 1:01:13 So that brings us to sort of the end of the decoding section. 1:01:18 Oh, see, now I'm going to switch gears and talk 1:01:25 about tokenization, which is that when-- so far, in all the things we have 1:01:31 done, including the homeworks and so on, we looked at this tokenization, the standard process 1:01:37 for taking a bunch of text and vectorizing it, which was the STIE process, standardize, tokenize, index, 1:01:45 and then encode. And the standardization, I mentioned earlier, strips out punctuation, lowercases everything, 1:01:51 sometimes removes stop words like a and things like that. It also does these things called stemming. 1:01:57 But it turns out, if you actually work with something like GPT, you know that it hasn't stripped out punctuation. 1:02:04 The punctuation is really good. It uses case, uppercase and lowercase. And, in fact, even better, you can actually make up a word 1:02:11 as part of your question, and it'll use that word consistently in the output. So just for fun, I made up a word. 1:02:19 I just did this yesterday or day before. I said, here's a new word and its definition. 1:02:25 The word is reldoh, hodler backwards. I said the definition, a student who understands 1:02:32 deep learning backwards. Please use this word in a sentence. And here is a sentence it's coming up with. 1:02:37 I was a little shocked. During the advanced neural network seminar, 1:02:43 it became evident that Jane was a true reldoh, effortlessly explaining even the most complex deep learning concepts in reverse order. 1:02:49 [LAUGHTER] So it clearly knows how to use anything you make up with. 1:02:54 So it has the ability to compose things from scratch as opposed to just looking up stuff. 1:03:00 So where is the thing coming from? That's the question. And the answer is this very beautiful thing called byte pair encoding, which we'll look at next. 1:03:07 So all right, so here, when we look at this process, 1:03:15 the disadvantages are, well, some of the things we have discussed, which is that we want to be able to preserve punctuation, we want to be able to preserve case, 1:03:20 we want to be able to handle new words, and so on and so forth. So sort of the modern models, like BERT and so on, 1:03:28 they use different tokenization schemes. They don't actually do the STIE thing. And the GPT family uses byte pair encoding, BPE. 1:03:36 BERT uses something called wordpiece. All of these ways of encoding, the fundamental idea 1:03:42 is to say, well, you know what? Whatever language you're working with, why don't we start, first of all, 1:03:47 with all the individual characters? Because if you could actually work with individual characters, you can clearly compose any word that comes up. 1:03:54 Reldoh is just R-E-L-D-O-H, six tokens, if you're working with characters at the character 1:04:00 level. But working only with characters is not great because that means that the model, 1:04:06 you're giving it no information about the world. It has to learn every word from scratch, what the word means and so on and so forth. 1:04:12 So it would be nice if we can actually give it words as well, but we don't want to give it infrequent words 1:04:19 because infrequent words, by definition, are not worth adding to your vocabulary. 1:04:24 They're just going to take up another embedding vector and things like that. For infrequent words, we'll just compose them. 1:04:31 We'll actually construct them on the fly because we can always use characters. So we don't want to put every word in there. 1:04:37 We only want to put frequent words. But to give this thing the ability to compose new words and not always have to go to characters, 1:04:44 we will give it parts of words. These are called subwords. So the key idea is that, let's come up 1:04:52 with a way to build a vocabulary which has characters, full words that are frequent enough to be worth adding, 1:04:59 and subwords, or word fragments that occur frequently enough to be worth adding. So, for example, the word standardize, i-z-e, normalize, 1:05:08 standardize, and so on and so forth, ize is going to show up a lot in many places. So you don't want to have standardized, and normalized, 1:05:14 and so on. You just want to have ize. You can just attach it to all kinds of words and make it all work. So that's the basic idea of all these tokenization schemes. 1:05:22 And BPE is one such way to figure out how to actually construct this vocabulary from a training 1:05:27 corpus. And, by the way, when I say characters, this will include not just uppercase, lowercase, alphabets, 1:05:33 and numbers. It will also include punctuation, so that all these things just become atomic units. 1:05:40 All right, so what we're going-- the way BPE works is that we're going to start 1:05:46 with each character as a token. And I'll talk about the rest of the thing on the page in just a moment. Don't worry about it. 1:05:51 We'll start with each character as a token. So let's say that your training corpus is just a single sentence, the cat sat on the mat. 1:05:58 And even though GPT does not actually do any lowercasing, it'll just actually use-- 1:06:04 T-H-E uppercase is different than t-h-e lowercase. Just for simplicity, I'm just going to standardize it here. 1:06:10 So it just becomes the cat sat on the mat. And then I'm going to write it in this form, where I basically put a comma after every word. 1:06:16 And then I put a little underscore to show the space between the words. I'm going to write it in this format, 1:06:21 and it'll become clear why I'm writing it in just a second. Now, my starting vocabulary is just all the individual letters 1:06:28 in the training corpus. So the starting is just whatever, all these letters. That's it. 1:06:33 And this is a starting point. And now what we do-- and this is the key step-- we merge tokens that most frequently 1:06:41 occur right next to each other. So if two characters or two tokens 1:06:47 are occurring right next to each other a lot, let's just merge them because they seem to be occurring a lot together. 1:06:53 May as well merge them. And so here, for example, I've listed the frequency of the adjacent tokens. 1:06:58 So, for example, if you look at t, h, t, h shows up right after each other here. It also shows up here. 1:07:06 So, therefore, it shows up twice. Now, h, e, again, is showing up here. 1:07:11 It's also showing up here. So that also shows up twice. c, a on the other hand, is only showing up here. 1:07:16 It's not showing up anywhere else. So it shows up once. a, t shows up three times, in mat, sat, and in cat, 1:07:24 and so on and so forth. You get the idea. So you're just looking at pairwise adjacent tokens. 1:07:30 And you pick the most frequent one that's showing up, which in this case happens to be a, t. And then you take a and t and you merge them. 1:07:36 So it becomes at. So when you do that, when you merge them 1:07:43 and then you add that new token that you have just literally created to your vocabulary list, 1:07:48 and then you update the corpus to reflect the merge you just did, so now the corpus becomes, the cat sat on the mat. 1:07:54 But in this case, there is no a and t separately. There is just the at combo token here. 1:08:02 Are we good with this step so far? Take the most frequent things and merge them. 1:08:07 It's a way to compress the data. 1:08:14 In fact, the algorithm came from someone trying to figure out a way to compress data. 1:08:22 Think of it this way. Suppose I tell you, I want you to compress a message I'm going to send to you. 1:08:27 And then you look at all the tasks, messages you've had to deal with. And it turns out you're finding that certain characters are 1:08:35 occurring next to each other all the time. Maybe, just for argument, let's say ABC shows up ridiculously 1:08:41 often in the messaging. And then you'd be like, if it's always showing up all the time together, why treat it as three things? 1:08:47 Let me just call it one thing. ABC, that's it. You send a single token called ABC every time 1:08:52 you need to send ABC, not A, B, C. That's the basic idea. So here, if you come here, that's what we have. 1:08:59 And then what we do is now we do, again, this calculation of adjacency tokens on this updated corpus. 1:09:05 And you can see here, t, h shows up once, t, h shows up here twice. So you get two. 1:09:11 H, e shows up twice. Everything else shows up once. And, yeah, when many things are showing up with equal frequency, 1:09:17 just pick one randomly from this. So we pick up t,h and we merge that, which means that we add t, 1:09:23 h to our vocabulary. And once we do that we update the corpus. And now we have-- 1:09:28 t, h is now one thing fused together, along with the previous thing, a, t, that had been fused together. 1:09:34 That is the corpus after the second merge. And then we do the same thing. We find the frequency of adjacent tokens. 1:09:40 So it turns out t, h and e are showing up twice. Everything else is showing up once. So we take t, h, e, merge it to get the. 1:09:46 Boom, the. And now we have the cat sat on the mat. So this process continues till we reach a predefined limit 1:09:55 for our vocabulary. Now, as it turns out, when they built GPT-2 and GPT-- 1:10:01 let me just see. I think I did some digging around on this thing. Yeah, so GPT-2 and 3, they set the vocabulary size to be 1:10:08 roughly 50,000. So it basically kept on doing this till it hit our limit of 50,000, then it stopped. 1:10:15 GPT-4 on the other hand, actually, went-- goes all the way to 100,000 vocabulary size. 1:10:23 So this is BPE in action. And so what's going to happen is once you finish this thing, 1:10:29 and you have vocabulary, and you have all these things that you have merged, when a new piece of text comes in, the merges-- 1:10:35 remember, here, we merged a, t to get at. This t, h became this and so on. 1:10:40 When a new piece of text arrives, the tokenization will apply the merges in the exact same order. So if the new text that comes in is the rat, 1:10:47 it's first going to apply the a, t to at to become-- fuse this here and then going to fuse t, 1:10:53 h to get this. And then it's going to fuse t, h and e to get that. And the final list of tokens that goes in to your model 1:10:58 is going to be the token for the, the token for space, and the token for r, and the token for at. 1:11:06 So let's see this in action. 1:11:12 OpenAI has its own thing, but I found this site to be really good. 1:11:18 So let's tokenize hands-on deep learning. 1:11:26 So you can see here, look at this. So H, uppercase H, is its own token. 1:11:34 It's token number 39. And its own token. 1:11:39 Dash is its own token. On is its own token. And then space deep is its token, and space learning is its token. 1:11:46 Note one thing, suppose you had said-- let's just say you just had deep, deep learning. 1:11:53 Deep has a different token than space deep. 1:11:59 What they have realized is that most words are actually going to show up after the space, after a space, 1:12:05 much more likely. So having a space attached to the beginning of the word, it sort of saves you a lot of compute and so on and so forth 1:12:13 because they will, in fact, arrive almost all the time with the space before it. That's the way they have attached 1:12:18 the space to the word itself. And note that deep learning, deep and deep-- 1:12:25 actually, let's call it this way. 1:12:30 So deep and deep are different. There is deep. There is-- so, clearly, it's taking case into account. 1:12:38 Then I put an exclamation here. Boom, that. And so, ultimately, what goes in when you have a phrase like, 1:12:48 sat on the mat-- so the cat sat on the mat. And you can see here, uppercase The. 1:12:56 And then let's just do another thing here. 1:13:01 So uppercase The with a space is 383. 1:13:06 Lowercase the is 262. And then that's distinct from just the without any space 1:13:12 that's a different thing. So these are all the tokens. Now, let's try something. 1:13:18 Let's try Jane. 1:13:24 So Jane is one token, which is great. And is another token. Let's see, Rama. 1:13:30 Oh, darn. My name wasn't worthy enough to be its own token. 1:13:37 But strangely enough, I was very surprised by this. 1:13:43 So if I put Rama in lowercase, it's its own token. [LAUGHTER] I have no idea what they were scraping, which websites. 1:13:52 And if I put Jane here, now j has become its token with space 1:13:59 and ane has become different. So the tokenization is a very interesting thing, 1:14:04 and it works in very interesting ways, but that's the basic idea, what's going on under the hood. I would encourage you to check out 1:14:10 your names to see if it's actually been tokenized. So all right, I'm done. Thanks, folks. I'll see you on Wednesday.

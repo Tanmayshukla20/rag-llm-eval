@@ -1,0 +1,7819 @@
+WEBVTT
+
+00:00:05.520 --> 00:00:08.470
+Hi everyone, welcome to another lecture
+
+00:00:08.480 --> 00:00:12.629
+for CS230 deep learning. Today we're
+
+00:00:12.639 --> 00:00:16.390
+going to talk about enhancing
+
+00:00:16.400 --> 00:00:19.109
+large language model applications
+
+00:00:19.119 --> 00:00:22.870
+and I I call this lecture beyond LLM.
+
+00:00:22.880 --> 00:00:28.150
+Um it has a lot of newer content and uh
+
+00:00:28.160 --> 00:00:31.830
+the idea behind this lecture is you we
+
+00:00:31.840 --> 00:00:34.310
+started to learn about neurons and then
+
+00:00:34.320 --> 00:00:36.229
+we learned about layers and then we
+
+00:00:36.239 --> 00:00:38.549
+learned about deep neural networks and
+
+00:00:38.559 --> 00:00:40.869
+then we learned a little bit about how
+
+00:00:40.879 --> 00:00:45.190
+to structure projects in C3 and now
+
+00:00:45.200 --> 00:00:48.630
+we're going one level beyond into what
+
+00:00:48.640 --> 00:00:51.750
+would it look like if you were building
+
+00:00:51.760 --> 00:00:55.910
+agentic AI systems at work in a startup
+
+00:00:55.920 --> 00:01:00.630
+in a company. Um, and it's probably one
+
+00:01:00.640 --> 00:01:03.110
+of the more practical lectures. Again,
+
+00:01:03.120 --> 00:01:05.350
+the goal is not to build a product end
+
+00:01:05.360 --> 00:01:07.910
+to end in the next hour or so, but
+
+00:01:07.920 --> 00:01:09.990
+rather to tell you all the techniques
+
+00:01:10.000 --> 00:01:13.350
+that AI engineers have cracked, figured
+
+00:01:13.360 --> 00:01:16.149
+out, are exploring so that after the
+
+00:01:16.159 --> 00:01:18.149
+class, you have sort of the breath of
+
+00:01:18.159 --> 00:01:20.469
+view of different prompting techniques,
+
+00:01:20.479 --> 00:01:23.270
+different agentic workflows, multi- aent
+
+00:01:23.280 --> 00:01:26.469
+systems, eval when you want to dive
+
+00:01:26.479 --> 00:01:28.390
+deeper, you have the baggage to dive
+
+00:01:28.400 --> 00:01:32.789
+deeper and learn faster about it. Okay,
+
+00:01:32.799 --> 00:01:35.270
+let's try to make it as interactive as
+
+00:01:35.280 --> 00:01:38.390
+possible as usual. Um, when we look at
+
+00:01:38.400 --> 00:01:42.469
+the agenda, the agenda is going to start
+
+00:01:42.479 --> 00:01:45.429
+with the core idea behind challenges and
+
+00:01:45.439 --> 00:01:49.030
+opportunities for augmenting LLMs. So,
+
+00:01:49.040 --> 00:01:51.350
+we start from a base model. How do we
+
+00:01:51.360 --> 00:01:54.310
+maximize the performance of that base
+
+00:01:54.320 --> 00:01:57.109
+model? Um, then we'll dive deep into the
+
+00:01:57.119 --> 00:01:59.510
+first line of optimization, which is
+
+00:01:59.520 --> 00:02:01.270
+prompting methods, and we'll see a
+
+00:02:01.280 --> 00:02:04.069
+variety of them. Then we'll go slightly
+
+00:02:04.079 --> 00:02:06.149
+deeper. If we were to get our hands
+
+00:02:06.159 --> 00:02:07.910
+under the hood and do some finetuning,
+
+00:02:07.920 --> 00:02:09.990
+what would it look like? I'm not a fan
+
+00:02:10.000 --> 00:02:12.229
+of fine-tuning, and I talk a lot about
+
+00:02:12.239 --> 00:02:15.350
+that, but I'll explain why. I I try to
+
+00:02:15.360 --> 00:02:18.150
+avoid fine-tuning as much as possible.
+
+00:02:18.160 --> 00:02:20.790
+Um, and then we'll do a section four on
+
+00:02:20.800 --> 00:02:24.150
+retrieval augmented generation or rag,
+
+00:02:24.160 --> 00:02:26.229
+which you've probably heard of in the
+
+00:02:26.239 --> 00:02:28.390
+news. Maybe some of you have played with
+
+00:02:28.400 --> 00:02:30.869
+rags. We're going to sort of unpack what
+
+00:02:30.879 --> 00:02:33.190
+a rag is and how it works and then the
+
+00:02:33.200 --> 00:02:36.150
+different methods within
+
+00:02:36.160 --> 00:02:38.710
+rags and then we'll talk about agentic
+
+00:02:38.720 --> 00:02:42.550
+AI workflows. Um, I'll define it. Um
+
+00:02:42.560 --> 00:02:45.350
+Andrew Ang is one of the call it first
+
+00:02:45.360 --> 00:02:48.229
+ones to have called this trend a a
+
+00:02:48.239 --> 00:02:50.390
+agentic AI workflows and so we look at
+
+00:02:50.400 --> 00:02:52.470
+the definition that Andrew gives to
+
+00:02:52.480 --> 00:02:54.869
+agentic workflows and then we start
+
+00:02:54.879 --> 00:02:58.470
+seeing examples. The section six is very
+
+00:02:58.480 --> 00:03:02.070
+practical. It's a case study where we
+
+00:03:02.080 --> 00:03:05.430
+will think about an agentic workflow and
+
+00:03:05.440 --> 00:03:09.110
+we'll and I ask you to measure um if the
+
+00:03:09.120 --> 00:03:11.910
+agent actually works and we brainstorm
+
+00:03:11.920 --> 00:03:14.630
+how we can measure if an agentic
+
+00:03:14.640 --> 00:03:16.229
+workflow is working the way you want it
+
+00:03:16.239 --> 00:03:17.830
+to work. There's plenty of methods
+
+00:03:17.840 --> 00:03:21.350
+called eval that's um solve that
+
+00:03:21.360 --> 00:03:23.589
+problem. uh and then we'll look briefly
+
+00:03:23.599 --> 00:03:25.589
+at multi- aent workflow and then we can
+
+00:03:25.599 --> 00:03:27.990
+have a a sort of open-ended discussion
+
+00:03:28.000 --> 00:03:29.750
+where I'll share some thoughts on what's
+
+00:03:29.760 --> 00:03:33.110
+next in AI. Um and I'm looking forward
+
+00:03:33.120 --> 00:03:34.869
+to hearing from you all as well on that
+
+00:03:34.879 --> 00:03:39.509
+one. Okay, so let's get started uh with
+
+00:03:39.519 --> 00:03:42.229
+the problem of augmenting LLM. So
+
+00:03:42.239 --> 00:03:45.190
+open-ended question for you. You are all
+
+00:03:45.200 --> 00:03:47.830
+familiar with pre-trained models like
+
+00:03:47.840 --> 00:03:52.229
+GPT3.5 Turbo or GPT40.
+
+00:03:52.239 --> 00:03:54.630
+What's the limitation of using just a
+
+00:03:54.640 --> 00:03:58.309
+base model? What are the typical issues
+
+00:03:58.319 --> 00:04:01.270
+that might arise as you're using a
+
+00:04:01.280 --> 00:04:07.990
+vanilla pre-trained model?
+
+00:04:08.000 --> 00:04:10.470
+&gt;&gt; Yes.
+
+00:04:10.480 --> 00:04:12.070
+&gt;&gt; Lacks some domain knowledge. You're
+
+00:04:12.080 --> 00:04:14.390
+perfectly right. you know, you we we had
+
+00:04:14.400 --> 00:04:16.390
+a group of students a few years ago was
+
+00:04:16.400 --> 00:04:19.349
+not LLM related, but you know, they were
+
+00:04:19.359 --> 00:04:23.510
+building a an autonomous uh farming uh
+
+00:04:23.520 --> 00:04:25.990
+device or vehicle that had a camera
+
+00:04:26.000 --> 00:04:28.710
+underneath taking pictures of crops to
+
+00:04:28.720 --> 00:04:31.749
+determine if the crop is sick or not, if
+
+00:04:31.759 --> 00:04:33.430
+it should be thrown away, like if it
+
+00:04:33.440 --> 00:04:36.150
+should be if it should be used or not.
+
+00:04:36.160 --> 00:04:39.590
+And and that data set is not a data set
+
+00:04:39.600 --> 00:04:42.390
+you find out there. and the base model
+
+00:04:42.400 --> 00:04:44.790
+or a pre-trained um computer vision
+
+00:04:44.800 --> 00:04:46.710
+model would lack that knowledge of
+
+00:04:46.720 --> 00:04:49.749
+course. What else?
+
+00:04:49.759 --> 00:04:57.189
+Yes.
+
+00:04:57.199 --> 00:04:59.909
+&gt;&gt; Okay. Maybe the you're saying so just to
+
+00:04:59.919 --> 00:05:02.629
+re repeat for people online you're
+
+00:05:02.639 --> 00:05:04.150
+saying the model might have been trained
+
+00:05:04.160 --> 00:05:06.550
+on high quality data but the data in the
+
+00:05:06.560 --> 00:05:08.550
+wild is actually not that high quality.
+
+00:05:08.560 --> 00:05:10.390
+And in fact, yes, the distribution of
+
+00:05:10.400 --> 00:05:13.430
+the real world might differ as we've
+
+00:05:13.440 --> 00:05:16.390
+seen with GANs from the training set and
+
+00:05:16.400 --> 00:05:17.670
+that might create an issue with
+
+00:05:17.680 --> 00:05:19.590
+pre-trained models. Although pre-trained
+
+00:05:19.600 --> 00:05:22.070
+LLMs are getting better at, you know,
+
+00:05:22.080 --> 00:05:25.670
+handling all sorts of data inputs. Uh
+
+00:05:25.680 --> 00:05:27.189
+yes,
+
+00:05:27.199 --> 00:05:28.390
+&gt;&gt; current
+
+00:05:28.400 --> 00:05:30.230
+&gt;&gt; lack what
+
+00:05:30.240 --> 00:05:33.350
+&gt;&gt; lacks current information. Uh the LLM is
+
+00:05:33.360 --> 00:05:35.110
+not up to date. And in fact, you're
+
+00:05:35.120 --> 00:05:37.270
+right. Imagine you have to retrain from
+
+00:05:37.280 --> 00:05:39.830
+scratch your LLM every couple of months.
+
+00:05:39.840 --> 00:05:42.870
+Uh, one story that I found funny, um,
+
+00:05:42.880 --> 00:05:44.790
+it's from probably three years ago or
+
+00:05:44.800 --> 00:05:47.110
+maybe more, five years ago, where, um,
+
+00:05:47.120 --> 00:05:50.070
+during his first presidency, President
+
+00:05:50.080 --> 00:05:54.230
+Trump one day tweeted Kov Fe. You
+
+00:05:54.240 --> 00:05:57.510
+remember that tweet or no, just Kof. And
+
+00:05:57.520 --> 00:05:59.670
+it was probably a typo or it was in his
+
+00:05:59.680 --> 00:06:02.710
+pocket, I don't know. But that word did
+
+00:06:02.720 --> 00:06:05.430
+not exist. The LMS in fact that Twitter
+
+00:06:05.440 --> 00:06:06.790
+was running at the time could not
+
+00:06:06.800 --> 00:06:09.590
+recognize that word. And so uh the
+
+00:06:09.600 --> 00:06:11.909
+recommener system sort of went wild
+
+00:06:11.919 --> 00:06:13.990
+because suddenly everybody was making
+
+00:06:14.000 --> 00:06:16.870
+fun of that tweet using the word kof and
+
+00:06:16.880 --> 00:06:19.350
+the LM was so confused on you know what
+
+00:06:19.360 --> 00:06:21.189
+does that mean where should we show it
+
+00:06:21.199 --> 00:06:23.110
+to whom should we show it and is an
+
+00:06:23.120 --> 00:06:26.629
+example of nowadays especially on social
+
+00:06:26.639 --> 00:06:30.070
+media there's so many new trends and um
+
+00:06:30.080 --> 00:06:32.150
+it's very hard to restrain an LLM to
+
+00:06:32.160 --> 00:06:33.990
+match the new trend and understand the
+
+00:06:34.000 --> 00:06:35.670
+new words out there. I mean, you know,
+
+00:06:35.680 --> 00:06:38.629
+you often times hear Gen Z words like re
+
+00:06:38.639 --> 00:06:41.110
+or mid or whatever. I don't know all of
+
+00:06:41.120 --> 00:06:44.950
+them, but u you probably want to find a
+
+00:06:44.960 --> 00:06:47.510
+way that can allow the LLM to understand
+
+00:06:47.520 --> 00:06:49.749
+those trends without retraining the LLM
+
+00:06:49.759 --> 00:06:53.909
+from scratch. Yeah. What else?
+
+00:06:53.919 --> 00:06:55.830
+&gt;&gt; It's trained to have a breath of
+
+00:06:55.840 --> 00:06:57.350
+knowledge and if you wanted to do
+
+00:06:57.360 --> 00:07:00.070
+something specialized that might
+
+00:07:00.080 --> 00:07:02.070
+&gt;&gt; Yeah. It might be trained on a breath of
+
+00:07:02.080 --> 00:07:04.550
+knowledge but it might fail or not
+
+00:07:04.560 --> 00:07:07.189
+perform adequately on a narrow task that
+
+00:07:07.199 --> 00:07:09.749
+is very well defined. Think about
+
+00:07:09.759 --> 00:07:12.309
+enterprise applications that yeah
+
+00:07:12.319 --> 00:07:14.309
+enterprise application you need high
+
+00:07:14.319 --> 00:07:17.589
+precision, high fidelity, low latency
+
+00:07:17.599 --> 00:07:19.670
+and maybe the model is not great at that
+
+00:07:19.680 --> 00:07:21.350
+specific thing. It might do fine but
+
+00:07:21.360 --> 00:07:23.350
+just not good enough and you might want
+
+00:07:23.360 --> 00:07:26.050
+to augment it in a certain way. Yeah.
+
+00:07:26.060 --> 00:07:28.870
+[clears throat]
+
+00:07:28.880 --> 00:07:30.629
+&gt;&gt; So it makes the model a lot heavier, a
+
+00:07:30.639 --> 00:07:33.589
+lot slower.
+
+00:07:33.599 --> 00:07:36.469
+&gt;&gt; So maybe it has a lot of broad domain
+
+00:07:36.479 --> 00:07:38.150
+knowledge that might not be needed for
+
+00:07:38.160 --> 00:07:40.390
+your application and so you're using a
+
+00:07:40.400 --> 00:07:42.390
+massive heavy model when you actually
+
+00:07:42.400 --> 00:07:43.990
+are only using 2% of the model
+
+00:07:44.000 --> 00:07:45.830
+capability. You're perfectly right. You
+
+00:07:45.840 --> 00:07:47.510
+might not need all of it. So you might
+
+00:07:47.520 --> 00:07:50.309
+find ways to prune, quantize the model,
+
+00:07:50.319 --> 00:07:52.790
+modify it. All of these are are are good
+
+00:07:52.800 --> 00:07:54.950
+points. I'm going to add a few more as
+
+00:07:54.960 --> 00:07:57.990
+well. Um, LLMs are very difficult to
+
+00:07:58.000 --> 00:07:59.990
+control. Uh, your last point is actually
+
+00:08:00.000 --> 00:08:01.510
+an example of that. You want to control
+
+00:08:01.520 --> 00:08:03.350
+the LM to use a part of its knowledge,
+
+00:08:03.360 --> 00:08:05.670
+but it's not. It's in fact getting
+
+00:08:05.680 --> 00:08:07.749
+confused. Uh, we've seen that in
+
+00:08:07.759 --> 00:08:11.510
+history. In 2016, Microsoft created a
+
+00:08:11.520 --> 00:08:14.950
+notorious Twitter bot that learned from
+
+00:08:14.960 --> 00:08:17.430
+users and it quickly became a racist
+
+00:08:17.440 --> 00:08:20.629
+jerk. Microsoft ended up removing the
+
+00:08:20.639 --> 00:08:23.189
+bot 16 hours after launching it. The
+
+00:08:23.199 --> 00:08:25.749
+community was really fast at determining
+
+00:08:25.759 --> 00:08:29.270
+that this was a racist bot. Um, and and
+
+00:08:29.280 --> 00:08:30.629
+you know, you can empathize with
+
+00:08:30.639 --> 00:08:32.070
+Microsoft in the sense that it is
+
+00:08:32.080 --> 00:08:34.389
+actually hard to control an LLM. they
+
+00:08:34.399 --> 00:08:36.469
+might have done a better job to qualify
+
+00:08:36.479 --> 00:08:38.870
+before launching but it is really hard
+
+00:08:38.880 --> 00:08:42.389
+to control an even more recently this is
+
+00:08:42.399 --> 00:08:46.230
+a tweet from Samman last November um
+
+00:08:46.240 --> 00:08:49.430
+where there was this debate between Elon
+
+00:08:49.440 --> 00:08:52.870
+Musk and Samman on whose LLM is the
+
+00:08:52.880 --> 00:08:55.509
+left-wing propaganda machine or the
+
+00:08:55.519 --> 00:08:57.509
+right-wing propaganda machine and they
+
+00:08:57.519 --> 00:08:59.750
+were hating on each other's LLMs but
+
+00:08:59.760 --> 00:09:01.190
+that tells you at the end of the day
+
+00:09:01.200 --> 00:09:03.990
+that even those two teams Grock and
+
+00:09:04.000 --> 00:09:06.230
+OpenAI, which are probably the best
+
+00:09:06.240 --> 00:09:08.949
+funded team with a lot of talent, are
+
+00:09:08.959 --> 00:09:10.790
+not doing a great job at controlling
+
+00:09:10.800 --> 00:09:14.230
+their LLMs, you know.
+
+00:09:14.240 --> 00:09:15.829
+And from time to time, if you hang out
+
+00:09:15.839 --> 00:09:20.150
+on X, you might see screenshots of users
+
+00:09:20.160 --> 00:09:22.389
+interacting with LLMs and the LLM saying
+
+00:09:22.399 --> 00:09:26.150
+something really controversial or or or
+
+00:09:26.160 --> 00:09:28.550
+racist or, you know, something that
+
+00:09:28.560 --> 00:09:31.156
+would not not be considered great
+
+00:09:31.166 --> 00:09:33.509
+[laughter] by social standards, I guess.
+
+00:09:33.519 --> 00:09:35.269
+And uh and that tells you that the model
+
+00:09:35.279 --> 00:09:39.030
+is really hard to to control.
+
+00:09:39.040 --> 00:09:41.670
+Um the second aspect of it is something
+
+00:09:41.680 --> 00:09:44.470
+that you've mentioned earlier. LLMs may
+
+00:09:44.480 --> 00:09:47.670
+underperform in your task. Um and that
+
+00:09:47.680 --> 00:09:50.070
+might include specific knowledge gaps
+
+00:09:50.080 --> 00:09:51.910
+such as medical diagnosis. If you're
+
+00:09:51.920 --> 00:09:53.190
+doing medical diagnosis, you would
+
+00:09:53.200 --> 00:09:55.190
+rather have an LLM that is specialized
+
+00:09:55.200 --> 00:09:57.030
+for that and is great at it. And in
+
+00:09:57.040 --> 00:09:58.630
+fact, something that we haven't
+
+00:09:58.640 --> 00:10:00.870
+mentioned as a group has sources. So the
+
+00:10:00.880 --> 00:10:03.750
+answer is sourced specifically. you have
+
+00:10:03.760 --> 00:10:05.430
+a hard time believing something unless
+
+00:10:05.440 --> 00:10:07.350
+you have the actual source of the
+
+00:10:07.360 --> 00:10:10.389
+research that backs it up. Um,
+
+00:10:10.399 --> 00:10:12.550
+inconsistencies in style and format. So,
+
+00:10:12.560 --> 00:10:15.269
+imagine you're building a legal AI
+
+00:10:15.279 --> 00:10:18.630
+agentic workflow. Uh, legal has a very
+
+00:10:18.640 --> 00:10:21.750
+specific way to write and read uh where
+
+00:10:21.760 --> 00:10:23.430
+every word counts. You know, if you're
+
+00:10:23.440 --> 00:10:26.230
+negotiating a large contract, every word
+
+00:10:26.240 --> 00:10:28.150
+on that contract might mean something
+
+00:10:28.160 --> 00:10:30.310
+else when it comes to the court. And so
+
+00:10:30.320 --> 00:10:32.470
+it's very important that you use an LLM
+
+00:10:32.480 --> 00:10:34.870
+that is very good at it. The precision
+
+00:10:34.880 --> 00:10:37.430
+matters. And then you know task specific
+
+00:10:37.440 --> 00:10:38.870
+understanding such as doing a
+
+00:10:38.880 --> 00:10:41.269
+classification on a niche field. Here I
+
+00:10:41.279 --> 00:10:43.509
+pulled an example where you know let's
+
+00:10:43.519 --> 00:10:45.750
+say a biotech product is trying to use
+
+00:10:45.760 --> 00:10:50.470
+an LLM to categorize user reviews into
+
+00:10:50.480 --> 00:10:53.990
+positive, neutral or negative. um you
+
+00:10:54.000 --> 00:10:56.870
+know maybe for that company something
+
+00:10:56.880 --> 00:11:00.949
+that's uh would be considered a negative
+
+00:11:00.959 --> 00:11:02.949
+review typically is actually considered
+
+00:11:02.959 --> 00:11:05.829
+a neutral review because the NPS of that
+
+00:11:05.839 --> 00:11:07.670
+industry tends to be way lower than
+
+00:11:07.680 --> 00:11:10.710
+other industries let's say um that's a
+
+00:11:10.720 --> 00:11:13.430
+task specific understanding and the LLM
+
+00:11:13.440 --> 00:11:15.110
+needs to be aligned to what the company
+
+00:11:15.120 --> 00:11:17.030
+believes is the categorization that it
+
+00:11:17.040 --> 00:11:19.670
+wants we will see an example of how to
+
+00:11:19.680 --> 00:11:22.069
+solve that problem in a second and then
+
+00:11:22.079 --> 00:11:25.350
+limited context handling. Um, a lot of
+
+00:11:25.360 --> 00:11:27.670
+AI applications especially in the
+
+00:11:27.680 --> 00:11:31.590
+enterprise have require data that has a
+
+00:11:31.600 --> 00:11:34.230
+lot of context. Like just to give you a
+
+00:11:34.240 --> 00:11:36.389
+simple example, knowledge management is
+
+00:11:36.399 --> 00:11:38.710
+an important space that enterprises buy
+
+00:11:38.720 --> 00:11:41.110
+a lot of knowledge management tool. When
+
+00:11:41.120 --> 00:11:43.030
+you go on your drive and you have all
+
+00:11:43.040 --> 00:11:44.710
+your documents, ideally you could have
+
+00:11:44.720 --> 00:11:47.350
+an LLM running on top of that drive. You
+
+00:11:47.360 --> 00:11:49.509
+can ask any question and it will read
+
+00:11:49.519 --> 00:11:52.069
+immediately thousands of document and
+
+00:11:52.079 --> 00:11:55.190
+answer what was our Q4 performance in
+
+00:11:55.200 --> 00:11:58.870
+sales. Um it was X dollars. Uh it finds
+
+00:11:58.880 --> 00:12:01.190
+it super quickly. In practice because
+
+00:12:01.200 --> 00:12:04.150
+LLMs do not have a large enough context,
+
+00:12:04.160 --> 00:12:06.710
+you cannot use a standalone vanilla
+
+00:12:06.720 --> 00:12:08.629
+pre-trained LLM to solve that problem.
+
+00:12:08.639 --> 00:12:11.590
+You will have to augment it.
+
+00:12:11.600 --> 00:12:12.943
+Does that make sense?
+
+00:12:12.953 --> 00:12:13.269
+&gt;&gt; [laughter]
+
+00:12:13.279 --> 00:12:15.190
+&gt;&gt; Uh the other aspect around context
+
+00:12:15.200 --> 00:12:17.430
+windows is they are in fact limited. If
+
+00:12:17.440 --> 00:12:20.389
+you look at the context windows of the
+
+00:12:20.399 --> 00:12:24.069
+models from the last 5 years um even the
+
+00:12:24.079 --> 00:12:29.190
+best models today will range in context
+
+00:12:29.200 --> 00:12:31.110
+window or number of tokens it can take
+
+00:12:31.120 --> 00:12:33.990
+as input um somewhere in the hundreds of
+
+00:12:34.000 --> 00:12:37.269
+thousands of tokens max. Just to give
+
+00:12:37.279 --> 00:12:40.710
+you a sense 200,000 tokens is roughly
+
+00:12:40.720 --> 00:12:43.910
+two books. Yeah. So that's how much you
+
+00:12:43.920 --> 00:12:46.710
+can upload uh and it can read pretty
+
+00:12:46.720 --> 00:12:48.550
+much and you can imagine that when
+
+00:12:48.560 --> 00:12:50.870
+you're dealing with video understanding
+
+00:12:50.880 --> 00:12:54.550
+or heavier data files that is of course
+
+00:12:54.560 --> 00:12:56.710
+an issue.
+
+00:12:56.720 --> 00:12:58.069
+So [snorts] you might have to chunk it,
+
+00:12:58.079 --> 00:12:59.509
+you might have to embed it, you might
+
+00:12:59.519 --> 00:13:01.910
+have to find other ways to get uh the
+
+00:13:01.920 --> 00:13:05.750
+LLM to handle larger contexts.
+
+00:13:05.760 --> 00:13:08.790
+Um the attention mechanism is also
+
+00:13:08.800 --> 00:13:11.110
+powerful but a problematic because it
+
+00:13:11.120 --> 00:13:14.150
+does not do a great job at attending in
+
+00:13:14.160 --> 00:13:17.350
+very large contexts. There is actually
+
+00:13:17.360 --> 00:13:19.990
+an interesting uh uh problem called
+
+00:13:20.000 --> 00:13:22.069
+needle in a haststack. It's an AI
+
+00:13:22.079 --> 00:13:25.590
+problem where or call it a benchmark
+
+00:13:25.600 --> 00:13:28.949
+where um in order to test if your LLM is
+
+00:13:28.959 --> 00:13:30.949
+good at attending at putting attention
+
+00:13:30.959 --> 00:13:34.710
+on a very specific fact within a large
+
+00:13:34.720 --> 00:13:37.910
+corpus, researchers might randomly
+
+00:13:37.920 --> 00:13:43.030
+insert in a book one sentence that can
+
+00:13:43.040 --> 00:13:45.750
+that that outlines a certain fact such
+
+00:13:45.760 --> 00:13:48.470
+as Arun and Max are having coffee at
+
+00:13:48.480 --> 00:13:50.790
+Blue Bottle in the middle of the Bible,
+
+00:13:50.800 --> 00:13:54.310
+let's say or some very long text. Um and
+
+00:13:54.320 --> 00:13:58.550
+then you ask the LLM um what were Arun
+
+00:13:58.560 --> 00:14:02.790
+and Max having you know at Blue Bottle
+
+00:14:02.800 --> 00:14:04.550
+and you see if it remembers that it was
+
+00:14:04.560 --> 00:14:06.310
+coffee. It's actually a complex problem
+
+00:14:06.320 --> 00:14:08.150
+not because the question is complex but
+
+00:14:08.160 --> 00:14:09.829
+because you're asking the model to find
+
+00:14:09.839 --> 00:14:12.629
+a fact within a very large corpus and
+
+00:14:12.639 --> 00:14:16.310
+that's complicated.
+
+00:14:16.320 --> 00:14:19.030
+So again this is a a limiting factor for
+
+00:14:19.040 --> 00:14:21.590
+LLMs. We we'll talk about rag in a
+
+00:14:21.600 --> 00:14:23.030
+second but I want to preview you know
+
+00:14:23.040 --> 00:14:26.629
+the there is debates around whether rag
+
+00:14:26.639 --> 00:14:29.590
+is the right long-term approach for AI
+
+00:14:29.600 --> 00:14:32.230
+system. So as a as a high level idea a
+
+00:14:32.240 --> 00:14:34.629
+rag is a mechanism if you will that
+
+00:14:34.639 --> 00:14:37.509
+embeds documents that an LLM can
+
+00:14:37.519 --> 00:14:42.230
+retrieve and then add as context to its
+
+00:14:42.240 --> 00:14:44.790
+initial prompt and answer a question. It
+
+00:14:44.800 --> 00:14:46.069
+has lots of application knowledge
+
+00:14:46.079 --> 00:14:47.910
+management is an example. So imagine you
+
+00:14:47.920 --> 00:14:50.310
+have your drive again but every document
+
+00:14:50.320 --> 00:14:53.590
+is sort of compressed in representation
+
+00:14:53.600 --> 00:14:56.069
+and the LLM has access to that lower
+
+00:14:56.079 --> 00:14:59.269
+dimensional representation. Um the
+
+00:14:59.279 --> 00:15:03.030
+debates that this tweet from Yu um
+
+00:15:03.040 --> 00:15:06.870
+outlines is in theory if we have
+
+00:15:06.880 --> 00:15:09.990
+infinite compute then rag is useless
+
+00:15:10.000 --> 00:15:12.790
+because you can just read a massive
+
+00:15:12.800 --> 00:15:14.389
+corpus immediately and answer your
+
+00:15:14.399 --> 00:15:18.310
+question. But even in that case, latency
+
+00:15:18.320 --> 00:15:19.990
+might be an issue. Imagine the time it
+
+00:15:20.000 --> 00:15:22.069
+takes for an AI to read all your drive
+
+00:15:22.079 --> 00:15:24.550
+every single time you ask a question. It
+
+00:15:24.560 --> 00:15:27.269
+doesn't make sense. So, rag has other
+
+00:15:27.279 --> 00:15:31.350
+advantages beyond even the accuracy. On
+
+00:15:31.360 --> 00:15:33.509
+top of that, the sourcing matters as
+
+00:15:33.519 --> 00:15:35.350
+well. So, it might rag allows you to
+
+00:15:35.360 --> 00:15:37.509
+source. We'll talk we'll talk about all
+
+00:15:37.519 --> 00:15:40.150
+that later. But there are there's always
+
+00:15:40.160 --> 00:15:42.710
+this debate in the in the community
+
+00:15:42.720 --> 00:15:45.269
+whether a certain method is actually
+
+00:15:45.279 --> 00:15:47.750
+future proof because in practice as
+
+00:15:47.760 --> 00:15:50.069
+compute power doubles every year let's
+
+00:15:50.079 --> 00:15:51.990
+say some of the methods we're learning
+
+00:15:52.000 --> 00:15:53.829
+right now might not be relevant 3 years
+
+00:15:53.839 --> 00:15:58.265
+from now we don't know essentially
+
+00:15:58.275 --> 00:16:01.269
+[snorts] um you know and and the analogy
+
+00:16:01.279 --> 00:16:03.350
+that that he makes on on you know
+
+00:16:03.360 --> 00:16:05.749
+context windows and why rag approaches
+
+00:16:05.759 --> 00:16:07.910
+might be relevant even a long time from
+
+00:16:07.920 --> 00:16:10.470
+Now um is search. You know when you
+
+00:16:10.480 --> 00:16:13.829
+search on a search engine you still find
+
+00:16:13.839 --> 00:16:15.910
+sources of information and in fact in
+
+00:16:15.920 --> 00:16:18.389
+the background there is very
+
+00:16:18.399 --> 00:16:20.710
+you know details traversal algorithms
+
+00:16:20.720 --> 00:16:23.990
+that rank and find the specific links
+
+00:16:24.000 --> 00:16:25.829
+that might be the the best to present
+
+00:16:25.839 --> 00:16:28.870
+you. um versus if you had to read
+
+00:16:28.880 --> 00:16:30.710
+imagine you had to read the entire web
+
+00:16:30.720 --> 00:16:32.310
+every single time you're doing a search
+
+00:16:32.320 --> 00:16:35.110
+query uh without being able to narrow to
+
+00:16:35.120 --> 00:16:37.670
+certain portion of the space that might
+
+00:16:37.680 --> 00:16:41.990
+again not be uh reasonable.
+
+00:16:42.000 --> 00:16:45.189
+Okay, when we're thinking of improving
+
+00:16:45.199 --> 00:16:48.790
+LLMs, the easiest way we think of it is
+
+00:16:48.800 --> 00:16:51.670
+is two dimensions. One dimension is we
+
+00:16:51.680 --> 00:16:53.350
+are going to improve the foundation
+
+00:16:53.360 --> 00:16:55.990
+model itself. So for example, we move
+
+00:16:56.000 --> 00:17:02.790
+from GPT uh 3.5 Turbo to GPT4 to GPT40
+
+00:17:02.800 --> 00:17:05.750
+to GPT5. Each of that is supposed to
+
+00:17:05.760 --> 00:17:08.549
+improve the base model. GPT5 is another
+
+00:17:08.559 --> 00:17:11.110
+debate because it's sort of packaging
+
+00:17:11.120 --> 00:17:13.510
+other models within itself. But you know
+
+00:17:13.520 --> 00:17:16.150
+if you're thinking about 3.5 4 and 4,
+
+00:17:16.160 --> 00:17:17.189
+that's really what it is. The
+
+00:17:17.199 --> 00:17:19.189
+pre-trained model improves and so you
+
+00:17:19.199 --> 00:17:21.270
+should see your uh performance improve
+
+00:17:21.280 --> 00:17:23.590
+on your tasks. Um but the other
+
+00:17:23.600 --> 00:17:27.270
+dimension is we can actually engineer
+
+00:17:27.280 --> 00:17:30.070
+leverage the LLM in a way that makes it
+
+00:17:30.080 --> 00:17:34.230
+better. So you can prompt simply GPT40.
+
+00:17:34.240 --> 00:17:36.070
+You can
+
+00:17:36.080 --> 00:17:38.070
+chain some prompts and improve the
+
+00:17:38.080 --> 00:17:39.430
+prompt and it will improve the
+
+00:17:39.440 --> 00:17:41.830
+performance. It's shown uh you can even
+
+00:17:41.840 --> 00:17:43.990
+put a rag around it. You can put an
+
+00:17:44.000 --> 00:17:46.230
+agentic workflow around it. You can even
+
+00:17:46.240 --> 00:17:49.430
+put a multi- aent system around it. And
+
+00:17:49.440 --> 00:17:51.430
+that is another dimension for you to
+
+00:17:51.440 --> 00:17:53.430
+improve performance. So that's how I
+
+00:17:53.440 --> 00:17:55.350
+want you to think about it. Which LLM
+
+00:17:55.360 --> 00:17:56.870
+I'm using and then how can I maximize
+
+00:17:56.880 --> 00:17:59.590
+the performance of that LLM.
+
+00:17:59.600 --> 00:18:02.710
+This lecture is about the vertical axis.
+
+00:18:02.720 --> 00:18:04.230
+Those are the methods that we will see
+
+00:18:04.240 --> 00:18:08.870
+with it together.
+
+00:18:08.880 --> 00:18:11.669
+Sounds good for the introduction. So
+
+00:18:11.679 --> 00:18:14.950
+let's move to prompt engineering. Um I'm
+
+00:18:14.960 --> 00:18:17.029
+going to start with an interesting study
+
+00:18:17.039 --> 00:18:19.110
+just to motivate why prompt engineering
+
+00:18:19.120 --> 00:18:22.950
+matters. Um there is a a study from uh
+
+00:18:22.960 --> 00:18:27.110
+you know HPS, UPEN um uh as well as
+
+00:18:27.120 --> 00:18:29.590
+Harvard Business School and and and
+
+00:18:29.600 --> 00:18:32.390
+others also involve Wharton that took a
+
+00:18:32.400 --> 00:18:34.950
+subset of BCG consultants, individual
+
+00:18:34.960 --> 00:18:37.110
+contributors, split them into three
+
+00:18:37.120 --> 00:18:39.750
+groups. One group had no access to AI.
+
+00:18:39.760 --> 00:18:42.230
+One group had access to I think it was
+
+00:18:42.240 --> 00:18:46.150
+GPT 4. Um and then one group had access
+
+00:18:46.160 --> 00:18:49.190
+to the LLM but also a training on how to
+
+00:18:49.200 --> 00:18:52.070
+prompt better. Um and then they observed
+
+00:18:52.080 --> 00:18:53.750
+the performance of these consultants
+
+00:18:53.760 --> 00:18:56.470
+across a wide variety of tasks. There's
+
+00:18:56.480 --> 00:18:58.230
+a few things that they noticed that I
+
+00:18:58.240 --> 00:19:00.230
+thought was interesting. One is
+
+00:19:00.240 --> 00:19:03.029
+something they call the JAG frontier. um
+
+00:19:03.039 --> 00:19:05.350
+meaning that certain tasks that
+
+00:19:05.360 --> 00:19:08.789
+consultants are doing fall beyond the
+
+00:19:08.799 --> 00:19:14.150
+jack frontier. Meaning AI is uh is not
+
+00:19:14.160 --> 00:19:17.270
+good enough. It's not it's not improving
+
+00:19:17.280 --> 00:19:18.950
+human performance. In fact, it's
+
+00:19:18.960 --> 00:19:21.350
+actually making it worse. Um and some
+
+00:19:21.360 --> 00:19:23.830
+tasks are within the frontier, meaning
+
+00:19:23.840 --> 00:19:26.950
+that uh AI is actually significantly
+
+00:19:26.960 --> 00:19:28.789
+improving the performance, the speed,
+
+00:19:28.799 --> 00:19:32.470
+the quality of the consultant. Um many
+
+00:19:32.480 --> 00:19:34.950
+tasks fail within and many tasks fail
+
+00:19:34.960 --> 00:19:36.950
+without and they shared their um
+
+00:19:36.960 --> 00:19:39.750
+insights but the TLDDR is there is a
+
+00:19:39.760 --> 00:19:42.310
+frontier within which AI is absolutely
+
+00:19:42.320 --> 00:19:45.430
+helping and one where they call out this
+
+00:19:45.440 --> 00:19:48.710
+behavior of falling asleep at the wheel
+
+00:19:48.720 --> 00:19:51.510
+where people relied on AI on a task that
+
+00:19:51.520 --> 00:19:54.310
+was beyond the frontier and in fact it
+
+00:19:54.320 --> 00:19:56.710
+ended up going worst because the human
+
+00:19:56.720 --> 00:19:58.549
+was not reviewing the outputs carefully
+
+00:19:58.559 --> 00:20:01.750
+enough. Um
+
+00:20:01.760 --> 00:20:04.070
+they did note that the the group that
+
+00:20:04.080 --> 00:20:06.789
+was trained was uh the best uh better
+
+00:20:06.799 --> 00:20:08.390
+than the group that was not trained on
+
+00:20:08.400 --> 00:20:10.549
+prompt engineering which also motivates
+
+00:20:10.559 --> 00:20:13.110
+why this lecture matters. Um so that
+
+00:20:13.120 --> 00:20:14.789
+you're you're you're within that group
+
+00:20:14.799 --> 00:20:18.070
+afterwards. One other insights um were
+
+00:20:18.080 --> 00:20:20.630
+the centurs and the cyborgs. They
+
+00:20:20.640 --> 00:20:22.150
+noticed that consultants had the
+
+00:20:22.160 --> 00:20:24.310
+tendency to work with AI in one of two
+
+00:20:24.320 --> 00:20:27.750
+ways and you might yourself find be part
+
+00:20:27.760 --> 00:20:30.789
+of one of these groups. The centaurs are
+
+00:20:30.799 --> 00:20:33.430
+mythical creatures that are half human,
+
+00:20:33.440 --> 00:20:35.270
+half
+
+00:20:35.280 --> 00:20:37.270
+I think half
+
+00:20:37.280 --> 00:20:40.070
+like what? Horses. Yeah, horses. Half
+
+00:20:40.080 --> 00:20:43.190
+horses, half something. Um, and those
+
+00:20:43.200 --> 00:20:45.270
+were individuals that would divide and
+
+00:20:45.280 --> 00:20:47.350
+delegate. They might give a pretty big
+
+00:20:47.360 --> 00:20:49.190
+task to the AI. So imagine you're
+
+00:20:49.200 --> 00:20:50.789
+working on a PowerPoint, which
+
+00:20:50.799 --> 00:20:53.190
+consultants are known to do. um you
+
+00:20:53.200 --> 00:20:55.110
+might actually write a very long prompt
+
+00:20:55.120 --> 00:20:56.950
+on how you wanted to do your PowerPoint
+
+00:20:56.960 --> 00:20:58.630
+and then let it work for some time and
+
+00:20:58.640 --> 00:21:00.870
+then come back and it's done when others
+
+00:21:00.880 --> 00:21:03.430
+would act as cyborgs. Cyborgs are fully
+
+00:21:03.440 --> 00:21:06.870
+blended bionic human robots, a human
+
+00:21:06.880 --> 00:21:09.590
+robot and robot augmented with robotic
+
+00:21:09.600 --> 00:21:11.990
+parts. Uh and those individuals would
+
+00:21:12.000 --> 00:21:13.909
+not delegate fully a task. They would
+
+00:21:13.919 --> 00:21:15.590
+actually work super quickly with the
+
+00:21:15.600 --> 00:21:17.669
+model and like back and forth. I find
+
+00:21:17.679 --> 00:21:19.510
+that a lot of students are actually more
+
+00:21:19.520 --> 00:21:23.110
+working like cyborgs than centaurs. But
+
+00:21:23.120 --> 00:21:24.710
+while maybe in the enterprise when
+
+00:21:24.720 --> 00:21:26.149
+you're trying to automate a workflow,
+
+00:21:26.159 --> 00:21:28.549
+you're thinking more like a centur.
+
+00:21:28.559 --> 00:21:30.630
+Yeah, that's just something good to keep
+
+00:21:30.640 --> 00:21:32.470
+in mind. Also, a lot of companies would
+
+00:21:32.480 --> 00:21:33.909
+tell you, oh, we're hiring prompt
+
+00:21:33.919 --> 00:21:36.470
+engineers, etc. It's a curer. I I don't
+
+00:21:36.480 --> 00:21:38.390
+buy that. I think it's just a skill that
+
+00:21:38.400 --> 00:21:39.830
+everybody should have. uh you're not
+
+00:21:39.840 --> 00:21:41.350
+going to make a career out of prompt
+
+00:21:41.360 --> 00:21:42.950
+engineering, but you're probably going
+
+00:21:42.960 --> 00:21:45.909
+to use it as a very powerful skill in
+
+00:21:45.919 --> 00:21:49.350
+your career.
+
+00:21:49.360 --> 00:21:51.510
+Um so let's talk about basic prompt
+
+00:21:51.520 --> 00:21:54.149
+design principles. I'm giving you a very
+
+00:21:54.159 --> 00:21:56.950
+simple prompt here. Summarize this
+
+00:21:56.960 --> 00:21:58.549
+document and then the document is
+
+00:21:58.559 --> 00:22:01.350
+uploaded alongside it. And the model has
+
+00:22:01.360 --> 00:22:05.029
+not um much context around you know what
+
+00:22:05.039 --> 00:22:06.870
+should be the summary, how long should
+
+00:22:06.880 --> 00:22:08.230
+be read the summary, what should it talk
+
+00:22:08.240 --> 00:22:10.710
+about. etc. You can actually improve
+
+00:22:10.720 --> 00:22:13.830
+these prompts um by by doing you know
+
+00:22:13.840 --> 00:22:16.310
+something like summarize this 10page
+
+00:22:16.320 --> 00:22:19.430
+scientific paper on renewable energy in
+
+00:22:19.440 --> 00:22:21.909
+five bullet points focusing on key
+
+00:22:21.919 --> 00:22:24.070
+findings and implications for policy
+
+00:22:24.080 --> 00:22:26.310
+makers. That's already better, right?
+
+00:22:26.320 --> 00:22:28.710
+You're sharing the audience and it's
+
+00:22:28.720 --> 00:22:30.230
+going to tailor it to the audience.
+
+00:22:30.240 --> 00:22:32.870
+You're saying that you want five bullet
+
+00:22:32.880 --> 00:22:34.630
+points and you want focus only on key
+
+00:22:34.640 --> 00:22:36.789
+findings. You know, that's a better
+
+00:22:36.799 --> 00:22:39.669
+prompt, you would argue. Um, how could
+
+00:22:39.679 --> 00:22:42.149
+you even make this prompt better? What
+
+00:22:42.159 --> 00:22:43.590
+are other techniques that you've heard
+
+00:22:43.600 --> 00:22:45.990
+of or tried yourself that could make
+
+00:22:46.000 --> 00:22:53.350
+this oneshot prompt better?
+
+00:22:53.360 --> 00:22:57.510
+&gt;&gt; Yeah.
+
+00:22:57.520 --> 00:23:00.070
+&gt;&gt; Okay. Right. Right. Example. So, say uh
+
+00:23:00.080 --> 00:23:02.230
+you mean here is an example of a great
+
+00:23:02.240 --> 00:23:04.070
+summary. Yeah, you're right. That's a
+
+00:23:04.080 --> 00:23:05.909
+good idea.
+
+00:23:05.919 --> 00:23:09.029
+to be like someone act like you are
+
+00:23:09.039 --> 00:23:12.310
+&gt;&gt; very popular technique act like a
+
+00:23:12.320 --> 00:23:14.390
+renewable energy expert giving a
+
+00:23:14.400 --> 00:23:17.110
+conference at Davos let's say yeah
+
+00:23:17.120 --> 00:23:19.430
+that's great someone
+
+00:23:19.440 --> 00:23:21.029
+&gt;&gt; sounds
+
+00:23:21.039 --> 00:23:23.510
+like you're really good at it like
+
+00:23:23.520 --> 00:23:25.750
+&gt;&gt; you are the best in the world at this
+
+00:23:25.760 --> 00:23:27.590
+explain [laughter] yeah actually I mean
+
+00:23:27.600 --> 00:23:30.149
+these things work it's funny but uh it
+
+00:23:30.159 --> 00:23:33.190
+does work to to say act like xyz it's a
+
+00:23:33.200 --> 00:23:34.789
+very popular prompt template But we
+
+00:23:34.799 --> 00:23:36.549
+we'll see a few examples. What else
+
+00:23:36.559 --> 00:23:41.190
+could you do?
+
+00:23:41.200 --> 00:23:41.909
+&gt;&gt; Yes.
+
+00:23:41.919 --> 00:23:43.750
+&gt;&gt; I personally like to say critique your
+
+00:23:43.760 --> 00:23:44.710
+own project.
+
+00:23:44.720 --> 00:23:46.310
+&gt;&gt; Okay.
+
+00:23:46.320 --> 00:23:47.990
+&gt;&gt; Critique your own project. So you're
+
+00:23:48.000 --> 00:23:49.750
+using reflection. So you might actually
+
+00:23:49.760 --> 00:23:51.270
+do one output and then ask it to
+
+00:23:51.280 --> 00:23:53.430
+critique it and then give it back. Yeah,
+
+00:23:53.440 --> 00:23:54.789
+we'll see that. That's a great one.
+
+00:23:54.799 --> 00:23:56.149
+That's that's the one that probably
+
+00:23:56.159 --> 00:23:57.990
+works best within those typically, but
+
+00:23:58.000 --> 00:24:00.630
+we we'll see some examples. What else?
+
+00:24:00.640 --> 00:24:01.669
+Yeah.
+
+00:24:01.679 --> 00:24:03.350
+&gt;&gt; Breaks.
+
+00:24:03.360 --> 00:24:05.510
+&gt;&gt; Okay. break the task down into steps. Do
+
+00:24:05.520 --> 00:24:07.430
+you know how that is called?
+
+00:24:07.440 --> 00:24:07.909
+&gt;&gt; No.
+
+00:24:07.919 --> 00:24:11.590
+&gt;&gt; Okay. Chain of thoughts. So, um this is
+
+00:24:11.600 --> 00:24:13.350
+actually a popular method that's been
+
+00:24:13.360 --> 00:24:15.430
+shown in in research that it improves.
+
+00:24:15.440 --> 00:24:16.870
+You could actually give a clear
+
+00:24:16.880 --> 00:24:19.190
+instruction and also encourage the model
+
+00:24:19.200 --> 00:24:21.830
+to think step by step. Approach the task
+
+00:24:21.840 --> 00:24:24.310
+step by step and do not skip any step.
+
+00:24:24.320 --> 00:24:26.390
+And then you give it some steps such as
+
+00:24:26.400 --> 00:24:28.390
+step one identify the three most
+
+00:24:28.400 --> 00:24:30.230
+important findings. Step two, explain
+
+00:24:30.240 --> 00:24:32.470
+how key each finding impact renewable
+
+00:24:32.480 --> 00:24:35.110
+energy policy. Step three, write the
+
+00:24:35.120 --> 00:24:36.950
+five bullet summary with each point
+
+00:24:36.960 --> 00:24:41.029
+addressing a finding um etc. So, chain
+
+00:24:41.039 --> 00:24:43.110
+of thoughts, I linked the paper from
+
+00:24:43.120 --> 00:24:46.310
+2023 uh that popularized chain of
+
+00:24:46.320 --> 00:24:48.070
+thoughts. Chain of thoughts is very very
+
+00:24:48.080 --> 00:24:49.830
+popular right now, especially in AI
+
+00:24:49.840 --> 00:24:51.110
+startups that are trying to control
+
+00:24:51.120 --> 00:24:55.110
+their elements.
+
+00:24:55.120 --> 00:24:57.590
+Okay, [snorts] to go back to your
+
+00:24:57.600 --> 00:25:00.870
+examples about act like XYZ,
+
+00:25:00.880 --> 00:25:03.029
+I what I like to do, Andrew also talks
+
+00:25:03.039 --> 00:25:05.269
+about that uh is to look at other
+
+00:25:05.279 --> 00:25:07.990
+people's prompts and in fact in online
+
+00:25:08.000 --> 00:25:10.310
+you have a lot of prompt repositories
+
+00:25:10.320 --> 00:25:13.029
+for free on GitHub. In fact, I I linked
+
+00:25:13.039 --> 00:25:15.590
+the awesome prompt template repo on
+
+00:25:15.600 --> 00:25:18.230
+GitHub where you have so many examples
+
+00:25:18.240 --> 00:25:19.909
+of great prompt that engineers have
+
+00:25:19.919 --> 00:25:22.070
+built. They said it works great for us
+
+00:25:22.080 --> 00:25:24.310
+and they published it online. And a lot
+
+00:25:24.320 --> 00:25:27.669
+of them starts with act as you know act
+
+00:25:27.679 --> 00:25:29.909
+as a Linux terminal, act [laughter] as
+
+00:25:29.919 --> 00:25:32.710
+an English translator, act like um a
+
+00:25:32.720 --> 00:25:37.029
+position interviewer, etc.
+
+00:25:37.039 --> 00:25:39.110
+The advantage of a prompt template is
+
+00:25:39.120 --> 00:25:41.350
+that you can actually put it in your
+
+00:25:41.360 --> 00:25:44.310
+code and scale it for many user
+
+00:25:44.320 --> 00:25:46.149
+requests. So let me give you an example
+
+00:25:46.159 --> 00:25:49.669
+from worker. um you know where Cara
+
+00:25:49.679 --> 00:25:51.750
+evaluates skills some of you have taken
+
+00:25:51.760 --> 00:25:54.390
+the assessments already and um tries to
+
+00:25:54.400 --> 00:25:57.110
+personalize it to the user um and in
+
+00:25:57.120 --> 00:25:58.950
+fact if you actually read in an HR
+
+00:25:58.960 --> 00:26:01.669
+system in an enterprise in the HR system
+
+00:26:01.679 --> 00:26:05.269
+you might have Jane is a product manager
+
+00:26:05.279 --> 00:26:08.710
+level three and she is uh in the US and
+
+00:26:08.720 --> 00:26:10.950
+her preferred language is English and
+
+00:26:10.960 --> 00:26:13.590
+actually that metadata can be inserted
+
+00:26:13.600 --> 00:26:15.990
+in a prompt template that we personalize
+
+00:26:16.000 --> 00:26:19.110
+for Jane and similarly for Joe whose
+
+00:26:19.120 --> 00:26:20.870
+favorite language is preferred language
+
+00:26:20.880 --> 00:26:23.990
+is Spanish. It will it will tailor it to
+
+00:26:24.000 --> 00:26:25.510
+Joe and that's called the prompt
+
+00:26:25.520 --> 00:26:26.710
+template.
+
+00:26:26.720 --> 00:26:28.470
+&gt;&gt; Yeah.
+
+00:26:28.480 --> 00:26:31.029
+&gt;&gt; Foundation models they don't use
+
+00:26:31.039 --> 00:26:35.110
+something you have to.
+
+00:26:35.120 --> 00:26:38.789
+&gt;&gt; So uh the question is do the foundation
+
+00:26:38.799 --> 00:26:41.269
+models use a prompt templates or do you
+
+00:26:41.279 --> 00:26:43.510
+have to integrate it yourself? So the
+
+00:26:43.520 --> 00:26:46.149
+foundation models probably use a system
+
+00:26:46.159 --> 00:26:47.909
+prompt that you don't see like when
+
+00:26:47.919 --> 00:26:51.190
+actually you type on chatgpt it is
+
+00:26:51.200 --> 00:26:54.789
+possible it's not public that openai
+
+00:26:54.799 --> 00:26:57.029
+behind the scene has like act like a
+
+00:26:57.039 --> 00:26:59.830
+very helpful assistant for this user and
+
+00:26:59.840 --> 00:27:02.149
+by the way here is your memories about
+
+00:27:02.159 --> 00:27:05.269
+your the user that we kept in a database
+
+00:27:05.279 --> 00:27:07.269
+you can actually check your memories and
+
+00:27:07.279 --> 00:27:09.269
+then your prompt goes under and then the
+
+00:27:09.279 --> 00:27:11.029
+generation starts. So probably they're
+
+00:27:11.039 --> 00:27:12.630
+using something like that, but it
+
+00:27:12.640 --> 00:27:15.029
+doesn't mean you can't um add one
+
+00:27:15.039 --> 00:27:17.430
+yourself. So in fact, if you if you
+
+00:27:17.440 --> 00:27:19.029
+think about a prompt template for for
+
+00:27:19.039 --> 00:27:20.950
+the work here example I was showing,
+
+00:27:20.960 --> 00:27:24.070
+maybe it starts when you call OpenAI by
+
+00:27:24.080 --> 00:27:25.909
+act like a head assistant and then
+
+00:27:25.919 --> 00:27:28.470
+underneath it's like act like a great uh
+
+00:27:28.480 --> 00:27:30.470
+AI mentor that helps people in their
+
+00:27:30.480 --> 00:27:33.990
+career and OpenAI's Chrome template also
+
+00:27:34.000 --> 00:27:35.669
+has follow the instruction from the
+
+00:27:35.679 --> 00:27:37.190
+creator or something like that, you
+
+00:27:37.200 --> 00:27:40.950
+know, it's possible. Yeah.
+
+00:27:40.960 --> 00:27:43.029
+U questions about prompt templates.
+
+00:27:43.039 --> 00:27:44.630
+Again, I would encourage you to go and
+
+00:27:44.640 --> 00:27:46.310
+read examples of prompts. Some of them
+
+00:27:46.320 --> 00:27:48.390
+are quite thoughtful.
+
+00:27:48.400 --> 00:27:51.029
+Um let's talk about zero shot versus few
+
+00:27:51.039 --> 00:27:53.669
+shot prompting. It came up earlier.
+
+00:27:53.679 --> 00:27:55.590
+Here's an example. Again, going back to
+
+00:27:55.600 --> 00:27:58.789
+the categorization of product reviews.
+
+00:27:58.799 --> 00:28:01.430
+Let's say that we're working on a task
+
+00:28:01.440 --> 00:28:04.470
+where the prompt is classify the tone of
+
+00:28:04.480 --> 00:28:06.630
+this sentence as positive, negative, or
+
+00:28:06.640 --> 00:28:09.190
+neutral. and the the and then you paste
+
+00:28:09.200 --> 00:28:12.070
+the review which is the product is fine
+
+00:28:12.080 --> 00:28:16.070
+but I was expecting more.
+
+00:28:16.080 --> 00:28:19.029
+If I were to survey the room I would bet
+
+00:28:19.039 --> 00:28:20.549
+that some of you would say it's
+
+00:28:20.559 --> 00:28:22.470
+negative, some of you would say it's
+
+00:28:22.480 --> 00:28:24.310
+neutral because you actually have a
+
+00:28:24.320 --> 00:28:26.549
+first part that is relatively
+
+00:28:26.559 --> 00:28:29.350
+positive. It's fine and then the second
+
+00:28:29.360 --> 00:28:30.950
+part I was expecting more which is
+
+00:28:30.960 --> 00:28:32.549
+relatively negative. So where do you
+
+00:28:32.559 --> 00:28:35.269
+land? This can be a subjective question
+
+00:28:35.279 --> 00:28:37.190
+and maybe in one industry this would be
+
+00:28:37.200 --> 00:28:39.029
+considered amazing and another one it
+
+00:28:39.039 --> 00:28:40.470
+would be considered really bad because
+
+00:28:40.480 --> 00:28:42.549
+people are used to really flourishing
+
+00:28:42.559 --> 00:28:45.590
+reviews. And so the way you can actually
+
+00:28:45.600 --> 00:28:47.750
+align the model to your task is by
+
+00:28:47.760 --> 00:28:49.750
+converting that zero shot prompt. Zero
+
+00:28:49.760 --> 00:28:51.269
+shot refers to the fact that it's not
+
+00:28:51.279 --> 00:28:54.149
+beginning given any example uh into a
+
+00:28:54.159 --> 00:28:56.870
+few short prompts where the model is
+
+00:28:56.880 --> 00:28:59.750
+given in the prompt a set of examples to
+
+00:28:59.760 --> 00:29:02.070
+align it to what you want it to do. So
+
+00:29:02.080 --> 00:29:03.830
+the example here is you you again you
+
+00:29:03.840 --> 00:29:05.669
+paste the same prompt as before with the
+
+00:29:05.679 --> 00:29:08.070
+user review and then you add here are
+
+00:29:08.080 --> 00:29:10.870
+examples of tone classifications. This
+
+00:29:10.880 --> 00:29:13.110
+exceeded my expectation completely.
+
+00:29:13.120 --> 00:29:16.389
+Positive. It's okay but I wish it had
+
+00:29:16.399 --> 00:29:19.990
+more features. Negative. The service was
+
+00:29:20.000 --> 00:29:22.950
+adequate. Neither good nor bad. Uh
+
+00:29:22.960 --> 00:29:25.430
+neutral. Now classify the tone of this
+
+00:29:25.440 --> 00:29:28.310
+sentence um you know after you've heard
+
+00:29:28.320 --> 00:29:29.830
+about these things. And the model then
+
+00:29:29.840 --> 00:29:32.950
+says negative. And the reason it says
+
+00:29:32.960 --> 00:29:36.310
+negative of course is likely um because
+
+00:29:36.320 --> 00:29:38.950
+of the second example which was it's
+
+00:29:38.960 --> 00:29:41.269
+okay but I wish it had more features
+
+00:29:41.279 --> 00:29:42.789
+which we told the model that was
+
+00:29:42.799 --> 00:29:45.029
+negative because the model saw that it's
+
+00:29:45.039 --> 00:29:47.669
+aligned now with your expectations.
+
+00:29:47.679 --> 00:29:50.950
+Fshot prompts are very popular. Um, and
+
+00:29:50.960 --> 00:29:52.950
+in fact, for AI startups that are
+
+00:29:52.960 --> 00:29:55.110
+slightly more sophisticated, you might
+
+00:29:55.120 --> 00:29:57.990
+see them uh keep a prompt up to date,
+
+00:29:58.000 --> 00:30:00.549
+whenever the a user says something and
+
+00:30:00.559 --> 00:30:02.630
+they might have a human label it and
+
+00:30:02.640 --> 00:30:05.269
+then add it as a few shots in the
+
+00:30:05.279 --> 00:30:08.070
+relevant prompt in their codebase. Um,
+
+00:30:08.080 --> 00:30:09.830
+you can think of that as almost building
+
+00:30:09.840 --> 00:30:11.430
+a data set, but instead of actually
+
+00:30:11.440 --> 00:30:13.190
+building a separate data set like we've
+
+00:30:13.200 --> 00:30:15.269
+seen with supervised fine-tuning and
+
+00:30:15.279 --> 00:30:17.430
+then train fine-tuning the model on it,
+
+00:30:17.440 --> 00:30:18.870
+you're just putting it directly in the
+
+00:30:18.880 --> 00:30:21.350
+prompt. And turns out it's probably
+
+00:30:21.360 --> 00:30:22.950
+faster to do that if you want to
+
+00:30:22.960 --> 00:30:24.310
+experiment quickly because you don't
+
+00:30:24.320 --> 00:30:26.149
+touch the model parameters. You just
+
+00:30:26.159 --> 00:30:28.549
+update your prompts. And you know if
+
+00:30:28.559 --> 00:30:31.029
+it's text examples, you can actually you
+
+00:30:31.039 --> 00:30:33.909
+know concatenate so many examples uh in
+
+00:30:33.919 --> 00:30:35.590
+a single prompt. At some point it will
+
+00:30:35.600 --> 00:30:37.909
+be too long and you will not have the
+
+00:30:37.919 --> 00:30:39.990
+necessary context window. But it's a
+
+00:30:40.000 --> 00:30:41.990
+pretty strong approach that is quick to
+
+00:30:42.000 --> 00:30:48.950
+align an LM.
+
+00:30:48.960 --> 00:30:51.590
+Okay. Yes.
+
+00:30:51.600 --> 00:30:54.470
+&gt;&gt; Research on how long can be until it
+
+00:30:54.480 --> 00:30:57.430
+starts with
+
+00:30:57.440 --> 00:31:00.230
+&gt;&gt; So question was is there any research on
+
+00:31:00.240 --> 00:31:02.389
+how long the prompt can be before the
+
+00:31:02.399 --> 00:31:04.470
+model essentially loses itself or
+
+00:31:04.480 --> 00:31:06.630
+doesn't follow instructions anymore?
+
+00:31:06.640 --> 00:31:09.909
+There is uh the problem is that research
+
+00:31:09.919 --> 00:31:12.389
+is outdated every few months uh because
+
+00:31:12.399 --> 00:31:15.430
+models get better. Um and so I I don't
+
+00:31:15.440 --> 00:31:17.190
+know where the state-of-the-art is. You
+
+00:31:17.200 --> 00:31:18.389
+can probably find it online on
+
+00:31:18.399 --> 00:31:21.269
+benchmarks on like we see that I I I
+
+00:31:21.279 --> 00:31:24.470
+give an example uh on the worker product
+
+00:31:24.480 --> 00:31:27.669
+you have um a voice conversation for
+
+00:31:27.679 --> 00:31:29.110
+some of you that have tried it where you
+
+00:31:29.120 --> 00:31:30.950
+you're ask explain what is a prompt and
+
+00:31:30.960 --> 00:31:32.070
+then you explain and then there's a
+
+00:31:32.080 --> 00:31:34.230
+scoring algorithm in behind we know that
+
+00:31:34.240 --> 00:31:38.389
+after eight turns the model loses itself
+
+00:31:38.399 --> 00:31:40.389
+after eight turns because you always
+
+00:31:40.399 --> 00:31:43.350
+paste the previous user response it just
+
+00:31:43.360 --> 00:31:45.669
+starts going wild and so the techniques
+
+00:31:45.679 --> 00:31:47.750
+we use in the background is we actually
+
+00:31:47.760 --> 00:31:49.590
+create chapters of the conversation.
+
+00:31:49.600 --> 00:31:51.029
+Maybe one chapter is the first aid
+
+00:31:51.039 --> 00:31:52.549
+prompt and then you actually start over
+
+00:31:52.559 --> 00:31:54.470
+from another prompt. You you can
+
+00:31:54.480 --> 00:31:55.909
+summarize the first part of the
+
+00:31:55.919 --> 00:31:58.310
+conversation, insert the summary and
+
+00:31:58.320 --> 00:32:00.070
+then keep going. You know, those are
+
+00:32:00.080 --> 00:32:01.909
+engineering hacks that engineers might
+
+00:32:01.919 --> 00:32:03.029
+have figured out in the background.
+
+00:32:03.039 --> 00:32:05.990
+Yeah. Because yeah, eight turns makes a
+
+00:32:06.000 --> 00:32:12.262
+prompt quite long actually.
+
+00:32:12.272 --> 00:32:15.590
+[snorts] Uh let's move on to chaining.
+
+00:32:15.600 --> 00:32:16.789
+uh chaining is the most popular
+
+00:32:16.799 --> 00:32:18.389
+technique out of everything we've seen
+
+00:32:18.399 --> 00:32:22.470
+so far in uh uh in prompt engineering.
+
+00:32:22.480 --> 00:32:24.310
+Uh it's not chain of thought. So chain
+
+00:32:24.320 --> 00:32:25.990
+of thought we've seen is think step by
+
+00:32:26.000 --> 00:32:27.750
+step, step one, step two, step three, do
+
+00:32:27.760 --> 00:32:30.230
+not skip any step. This is different.
+
+00:32:30.240 --> 00:32:32.950
+This is chaining complex prompt to
+
+00:32:32.960 --> 00:32:34.950
+improve performance. And this is what it
+
+00:32:34.960 --> 00:32:38.389
+looks like. Um, you take a singlestep
+
+00:32:38.399 --> 00:32:41.190
+prompt such as read this customer review
+
+00:32:41.200 --> 00:32:43.430
+and write a professional response that
+
+00:32:43.440 --> 00:32:45.509
+acknowledges their concern, explains the
+
+00:32:45.519 --> 00:32:48.070
+issue, offers a resolution, and then you
+
+00:32:48.080 --> 00:32:50.230
+paste the customer review, which is, I
+
+00:32:50.240 --> 00:32:52.630
+ordered a laptop, it arrived 3 days
+
+00:32:52.640 --> 00:32:55.269
+late, the packaging was damaged, very
+
+00:32:55.279 --> 00:32:58.070
+disappointing. I need it that urgently
+
+00:32:58.080 --> 00:33:00.310
+for work. And then the output is an
+
+00:33:00.320 --> 00:33:03.190
+email that is immediately given to you
+
+00:33:03.200 --> 00:33:06.789
+by the LLM after it reads the prompt.
+
+00:33:06.799 --> 00:33:11.669
+Um, so this might work, but it might be
+
+00:33:11.679 --> 00:33:15.350
+hard to control, you know, cuz think
+
+00:33:15.360 --> 00:33:16.950
+about it. There's multiple steps that
+
+00:33:16.960 --> 00:33:19.190
+you have listed and everything is
+
+00:33:19.200 --> 00:33:21.830
+embedded in the same prompt. And if you
+
+00:33:21.840 --> 00:33:23.669
+wanted to debug step by step and know
+
+00:33:23.679 --> 00:33:25.750
+which step is weaker, you couldn't. You
+
+00:33:25.760 --> 00:33:28.230
+would have everything mixed together. So
+
+00:33:28.240 --> 00:33:31.190
+one advantage of chaining is you know
+
+00:33:31.200 --> 00:33:33.029
+you would you would separate the prompts
+
+00:33:33.039 --> 00:33:35.190
+so that you can debug them separately
+
+00:33:35.200 --> 00:33:38.230
+and it will also lead to um an easier
+
+00:33:38.240 --> 00:33:41.350
+manner to improve your workflow. Um
+
+00:33:41.360 --> 00:33:43.509
+let's say a first prompt is extract the
+
+00:33:43.519 --> 00:33:45.750
+key issues. Identify the key concerns
+
+00:33:45.760 --> 00:33:47.669
+mentioned in this customer review. Paste
+
+00:33:47.679 --> 00:33:51.430
+a customer review. Second prompt using
+
+00:33:51.440 --> 00:33:53.509
+these issues. So you paste back the
+
+00:33:53.519 --> 00:33:55.990
+issues. Draft an outline for a
+
+00:33:56.000 --> 00:33:57.830
+professional response that acknowledges
+
+00:33:57.840 --> 00:34:00.230
+concerns, explains possible reasons, and
+
+00:34:00.240 --> 00:34:04.310
+offer a resolution.
+
+00:34:04.320 --> 00:34:07.590
+So, this is not, you know, prompt number
+
+00:34:07.600 --> 00:34:09.270
+three, write the full response. So,
+
+00:34:09.280 --> 00:34:12.869
+using the outline, um, write the
+
+00:34:12.879 --> 00:34:14.950
+professional response
+
+00:34:14.960 --> 00:34:18.230
+and then you get your final output.
+
+00:34:18.240 --> 00:34:21.270
+So, in theory, you can't tell me, oh,
+
+00:34:21.280 --> 00:34:22.869
+the second approach is better than the
+
+00:34:22.879 --> 00:34:24.869
+first one at first. But what you can
+
+00:34:24.879 --> 00:34:27.430
+notice is that we can actually test
+
+00:34:27.440 --> 00:34:29.190
+those three prompts separately from each
+
+00:34:29.200 --> 00:34:32.470
+other and determine if we will get the
+
+00:34:32.480 --> 00:34:35.750
+most gains out of uh engineering the
+
+00:34:35.760 --> 00:34:37.909
+first prompt, optimizing it or the
+
+00:34:37.919 --> 00:34:40.550
+second one or the third one. We now have
+
+00:34:40.560 --> 00:34:42.230
+three prompts that are independent from
+
+00:34:42.240 --> 00:34:45.349
+each other. And you know maybe if uh the
+
+00:34:45.359 --> 00:34:49.270
+outline was better um the performance of
+
+00:34:49.280 --> 00:34:52.149
+uh the email the email how much it will
+
+00:34:52.159 --> 00:34:53.990
+the open rate will be or the user
+
+00:34:54.000 --> 00:34:55.829
+satisfaction on the response will
+
+00:34:55.839 --> 00:34:58.069
+actually get higher you know and so
+
+00:34:58.079 --> 00:34:59.750
+chaining
+
+00:34:59.760 --> 00:35:01.270
+improves performance but most
+
+00:35:01.280 --> 00:35:03.670
+importantly helps you control your
+
+00:35:03.680 --> 00:35:08.069
+workflow and debug it more seamlessly.
+
+00:35:08.079 --> 00:35:09.430
+&gt;&gt; Yes.
+
+00:35:09.440 --> 00:35:12.230
+So [snorts] if we know that the three
+
+00:35:12.240 --> 00:35:15.510
+pump independently work very well, if we
+
+00:35:15.520 --> 00:35:17.829
+combine them into one pump and we
+
+00:35:17.839 --> 00:35:19.750
+highlight that stepbystep thinking
+
+00:35:19.760 --> 00:35:23.270
+process, do we does on average we get
+
+00:35:23.280 --> 00:35:26.069
+the same policy output or we still have
+
+00:35:26.079 --> 00:35:28.790
+to do that break down?
+
+00:35:28.800 --> 00:35:31.190
+&gt;&gt; So let me try to rephrase you say let's
+
+00:35:31.200 --> 00:35:32.790
+say we look at the first prompt which
+
+00:35:32.800 --> 00:35:35.270
+has uh all three task built in that
+
+00:35:35.280 --> 00:35:38.950
+prompt. Um what what exactly do you
+
+00:35:38.960 --> 00:35:40.790
+mean? You mean like if we evaluate the
+
+00:35:40.800 --> 00:35:43.030
+output and we measure some user insight,
+
+00:35:43.040 --> 00:35:46.710
+satisfaction, etc. Um why don't we just
+
+00:35:46.720 --> 00:35:49.030
+modify that prompt and essentially see
+
+00:35:49.040 --> 00:35:51.190
+how it improves user satisfaction?
+
+00:35:51.200 --> 00:35:55.190
+&gt;&gt; Yeah, instead process.
+
+00:35:55.200 --> 00:35:56.630
+&gt;&gt; I see. See, why do we need the three
+
+00:35:56.640 --> 00:35:57.109
+steps?
+
+00:35:57.119 --> 00:35:57.670
+&gt;&gt; Yeah.
+
+00:35:57.680 --> 00:35:59.430
+&gt;&gt; Yeah. I mean, think about it. The
+
+00:35:59.440 --> 00:36:01.430
+intermediate output is what you want to
+
+00:36:01.440 --> 00:36:05.349
+see. Like if I'm debugging the first um
+
+00:36:05.359 --> 00:36:07.910
+approach, uh the way I would do it is I
+
+00:36:07.920 --> 00:36:09.750
+would capture user insights. Like here's
+
+00:36:09.760 --> 00:36:11.750
+the email, how good was the response?
+
+00:36:11.760 --> 00:36:14.550
+Thumbs up, thumbs down. Um was your
+
+00:36:14.560 --> 00:36:17.030
+issue issue resolved? Uh thumbs up,
+
+00:36:17.040 --> 00:36:18.630
+thumbs down. Those would tell me how
+
+00:36:18.640 --> 00:36:20.069
+good is my prompt? And I can engineer
+
+00:36:20.079 --> 00:36:21.589
+that prompt, optimize it, and I would
+
+00:36:21.599 --> 00:36:24.550
+probably drive some gains. Um but I will
+
+00:36:24.560 --> 00:36:27.030
+not be able easily to trace back to what
+
+00:36:27.040 --> 00:36:29.349
+the problem was. While in the second
+
+00:36:29.359 --> 00:36:31.750
+approach, not only I can use the end to
+
+00:36:31.760 --> 00:36:33.910
+end metrics to improve my process, I can
+
+00:36:33.920 --> 00:36:35.349
+also use the intermediate steps. For
+
+00:36:35.359 --> 00:36:37.990
+example, if I look at prompt two and I
+
+00:36:38.000 --> 00:36:39.349
+look at the outline and I see the
+
+00:36:39.359 --> 00:36:41.829
+outline is actually meh, it's not great,
+
+00:36:41.839 --> 00:36:43.750
+then I think I can get a lot of gains
+
+00:36:43.760 --> 00:36:46.790
+out of the outline. Um, or the outline
+
+00:36:46.800 --> 00:36:48.550
+is actually really good, but the last
+
+00:36:48.560 --> 00:36:49.910
+prompt doesn't do a good job at
+
+00:36:49.920 --> 00:36:51.510
+translating it into an email. So the
+
+00:36:51.520 --> 00:36:53.430
+outline is exactly what I want the the
+
+00:36:53.440 --> 00:36:56.470
+LLM to do, but the the translation in a
+
+00:36:56.480 --> 00:36:58.470
+customerf facing email is not good. In
+
+00:36:58.480 --> 00:37:00.390
+fact, it doesn't follow our vocabulary
+
+00:37:00.400 --> 00:37:01.910
+internally.
+
+00:37:01.920 --> 00:37:03.750
+Then I know the third prompt is where I
+
+00:37:03.760 --> 00:37:06.069
+would get the most gains.
+
+00:37:06.079 --> 00:37:07.750
+So that that's what it allows me to do.
+
+00:37:07.760 --> 00:37:09.910
+Have intermediate steps to review.
+
+00:37:09.920 --> 00:37:10.470
+&gt;&gt; Yeah.
+
+00:37:10.480 --> 00:37:13.829
+&gt;&gt; Are there any lat?
+
+00:37:13.839 --> 00:37:15.190
+&gt;&gt; We'll talk about it. Are there any
+
+00:37:15.200 --> 00:37:17.910
+latency concerns? Yes. um in certain
+
+00:37:17.920 --> 00:37:20.310
+applications um you don't want to use a
+
+00:37:20.320 --> 00:37:21.670
+chain or you don't want to use a long
+
+00:37:21.680 --> 00:37:26.150
+chain because it adds latency.
+
+00:37:26.160 --> 00:37:28.950
+We'll talk about that later. Good point.
+
+00:37:28.960 --> 00:37:31.670
+So practically this is what uh chaining
+
+00:37:31.680 --> 00:37:33.910
+complex prompts look like. You have your
+
+00:37:33.920 --> 00:37:35.910
+first prompt with your first task. It
+
+00:37:35.920 --> 00:37:38.550
+outputs the output is is pasted in the
+
+00:37:38.560 --> 00:37:40.390
+second prompt with the second task being
+
+00:37:40.400 --> 00:37:43.030
+defined. The output is then pasted into
+
+00:37:43.040 --> 00:37:44.470
+the third prompt with the third task
+
+00:37:44.480 --> 00:37:47.190
+being defined and so on. That's what it
+
+00:37:47.200 --> 00:37:52.550
+looks like in practice.
+
+00:37:52.560 --> 00:37:55.990
+Super. U
+
+00:37:56.000 --> 00:37:58.069
+we'll talk more later about testing your
+
+00:37:58.079 --> 00:38:00.390
+prompts, but there are methods now to do
+
+00:38:00.400 --> 00:38:02.230
+it and we'll we'll see later in this
+
+00:38:02.240 --> 00:38:04.630
+lecture with our case study how uh we
+
+00:38:04.640 --> 00:38:08.230
+can test our prompts. Uh but here is an
+
+00:38:08.240 --> 00:38:11.910
+example of how you you might do it. Um
+
+00:38:11.920 --> 00:38:15.510
+you you might have a a summarization
+
+00:38:15.520 --> 00:38:18.630
+workflow, you know, prompt um that is
+
+00:38:18.640 --> 00:38:21.510
+the baseline. It's a single uh prompt.
+
+00:38:21.520 --> 00:38:23.750
+You might have a refined summarization
+
+00:38:23.760 --> 00:38:27.190
+which is a modified prompt of this or a
+
+00:38:27.200 --> 00:38:30.790
+workflow with a chain, you know. Um, and
+
+00:38:30.800 --> 00:38:33.270
+then you have your test case, which is
+
+00:38:33.280 --> 00:38:36.069
+the input that you want to summarize,
+
+00:38:36.079 --> 00:38:37.589
+let's say, and then you have the
+
+00:38:37.599 --> 00:38:39.670
+generated output, and you can have
+
+00:38:39.680 --> 00:38:42.710
+humans go and rate these outputs. And
+
+00:38:42.720 --> 00:38:45.510
+you would notice uh that the baseline is
+
+00:38:45.520 --> 00:38:47.910
+better or worse than the refined prompt.
+
+00:38:47.920 --> 00:38:49.829
+Of course, this manual approach takes
+
+00:38:49.839 --> 00:38:53.510
+time. Um, but it's a good way to start
+
+00:38:53.520 --> 00:38:56.550
+and usually the advice is get hands-on
+
+00:38:56.560 --> 00:38:57.670
+at the beginning because you would
+
+00:38:57.680 --> 00:38:59.349
+quickly notice some issues and it will
+
+00:38:59.359 --> 00:39:01.670
+give you better intuition on what tweaks
+
+00:39:01.680 --> 00:39:03.990
+can lead to better performance. However,
+
+00:39:04.000 --> 00:39:05.670
+if you wanted to scale that system
+
+00:39:05.680 --> 00:39:07.510
+across many products, many parts of your
+
+00:39:07.520 --> 00:39:09.750
+codebase, uh you might want to find a
+
+00:39:09.760 --> 00:39:11.510
+way to do that automatically without
+
+00:39:11.520 --> 00:39:13.589
+asking humans to review and grade
+
+00:39:13.599 --> 00:39:16.790
+summaries, right? Um, one approach is
+
+00:39:16.800 --> 00:39:20.230
+to, um, use, you know, platforms like at
+
+00:39:20.240 --> 00:39:22.550
+Portera, we, our team uses a platform
+
+00:39:22.560 --> 00:39:24.310
+called Prompt Fu that allows you to
+
+00:39:24.320 --> 00:39:26.710
+actually automate part of this testing.
+
+00:39:26.720 --> 00:39:30.630
+Um, in a nutshell, what it does is it
+
+00:39:30.640 --> 00:39:33.670
+can allow you to run the same prompt
+
+00:39:33.680 --> 00:39:36.230
+with five different LLMs immediately,
+
+00:39:36.240 --> 00:39:37.910
+put everything in a table that makes it
+
+00:39:37.920 --> 00:39:40.069
+super easy for a human to grade, let's
+
+00:39:40.079 --> 00:39:43.109
+say. Or alternatively, it might allow
+
+00:39:43.119 --> 00:39:47.109
+you to define define LLM judges.
+
+00:39:47.119 --> 00:39:49.109
+LLM judges can come in different
+
+00:39:49.119 --> 00:39:51.910
+flavors. For example, I can have an LLM
+
+00:39:51.920 --> 00:39:54.710
+judge that does a pair-wise comparison.
+
+00:39:54.720 --> 00:39:56.790
+So, what the LLM is asked to do is here
+
+00:39:56.800 --> 00:39:58.870
+are two summaries. Just tell me which
+
+00:39:58.880 --> 00:40:01.270
+one is better than the other one. Um,
+
+00:40:01.280 --> 00:40:03.190
+that's what the LLM does. And that can
+
+00:40:03.200 --> 00:40:04.950
+be used as a proxy for how good the
+
+00:40:04.960 --> 00:40:06.710
+summarization baseline versus the
+
+00:40:06.720 --> 00:40:09.510
+refined version is. Another way to do an
+
+00:40:09.520 --> 00:40:13.510
+LLMA judge is if you do it for a single
+
+00:40:13.520 --> 00:40:15.829
+answer grading. So here's a summary,
+
+00:40:15.839 --> 00:40:18.790
+grade it from one to five, you know, and
+
+00:40:18.800 --> 00:40:22.710
+then you can go even deeper and do a a
+
+00:40:22.720 --> 00:40:24.710
+reference guided pair wise comparison or
+
+00:40:24.720 --> 00:40:27.829
+you add also a rubric. You say a five is
+
+00:40:27.839 --> 00:40:30.790
+when a summary is below 100 characters.
+
+00:40:30.800 --> 00:40:33.030
+I'm just making up below 100 characters
+
+00:40:33.040 --> 00:40:35.270
+mentions at least three key points that
+
+00:40:35.280 --> 00:40:37.670
+are distinct and starts with a first
+
+00:40:37.680 --> 00:40:39.349
+sentence that displays the overview and
+
+00:40:39.359 --> 00:40:40.630
+then goes into the detail. That's a
+
+00:40:40.640 --> 00:40:42.870
+great summary number five out of five.
+
+00:40:42.880 --> 00:40:46.470
+Zero is the LLM failed to summarize and
+
+00:40:46.480 --> 00:40:49.750
+actually was very verbose let's say and
+
+00:40:49.760 --> 00:40:52.790
+so you put a rubric behind it and you
+
+00:40:52.800 --> 00:40:55.109
+have an LLM as just finding the rubric.
+
+00:40:55.119 --> 00:40:56.710
+Of course you can now pair different
+
+00:40:56.720 --> 00:40:58.230
+techniques. You can do a few shot for
+
+00:40:58.240 --> 00:40:59.670
+the rubric. You can actually give
+
+00:40:59.680 --> 00:41:02.150
+examples of a five out of fives, four
+
+00:41:02.160 --> 00:41:03.990
+out of fours, three out of threes
+
+00:41:04.000 --> 00:41:05.270
+because now you know multiple
+
+00:41:05.280 --> 00:41:08.550
+techniques. Okay, [clears throat]
+
+00:41:08.560 --> 00:41:11.190
+does that make sense?
+
+00:41:11.200 --> 00:41:13.829
+Yeah. Okay. So that was the second
+
+00:41:13.839 --> 00:41:17.109
+section on prompt engineering uh or the
+
+00:41:17.119 --> 00:41:20.630
+first line of optimization. Now, let's
+
+00:41:20.640 --> 00:41:22.710
+say you've exhausted all your chances
+
+00:41:22.720 --> 00:41:24.950
+for prompt engineering and you're
+
+00:41:24.960 --> 00:41:26.390
+thinking about actually touching the
+
+00:41:26.400 --> 00:41:28.630
+model, modifying its weights or
+
+00:41:28.640 --> 00:41:32.150
+fine-tuning it. In other words, um I was
+
+00:41:32.160 --> 00:41:33.910
+telling you I'm not a a fan of
+
+00:41:33.920 --> 00:41:36.950
+fine-tuning. There's a few reasons why.
+
+00:41:36.960 --> 00:41:41.510
+Um one, it requires substantial label
+
+00:41:41.520 --> 00:41:44.630
+data typically to fine-tune. Although
+
+00:41:44.640 --> 00:41:46.950
+now there are approaches that are
+
+00:41:46.960 --> 00:41:48.950
+getting better at fine-tuning that look
+
+00:41:48.960 --> 00:41:51.190
+more like few shot prompting actually
+
+00:41:51.200 --> 00:41:54.309
+than fine-tuning. It's sort of merging
+
+00:41:54.319 --> 00:41:56.230
+uh although one modifies the weight, the
+
+00:41:56.240 --> 00:41:58.230
+other doesn't modify the weights. Um
+
+00:41:58.240 --> 00:42:00.309
+fine-tune models may also overfeed to
+
+00:42:00.319 --> 00:42:01.750
+specific data. We're going to see a
+
+00:42:01.760 --> 00:42:04.950
+funny example actually. Um losing uh
+
+00:42:04.960 --> 00:42:07.030
+their general purpose utility. So you
+
+00:42:07.040 --> 00:42:09.109
+might fine-tune a model and actually
+
+00:42:09.119 --> 00:42:11.030
+when someone asks a pretty generic
+
+00:42:11.040 --> 00:42:12.630
+question, it doesn't do well anymore.
+
+00:42:12.640 --> 00:42:14.230
+You know, it might do well on your task.
+
+00:42:14.240 --> 00:42:16.069
+So it might be relevant or not. And then
+
+00:42:16.079 --> 00:42:17.750
+it's it's time and cost intensive.
+
+00:42:17.760 --> 00:42:21.109
+That's my main problem. And you know, at
+
+00:42:21.119 --> 00:42:23.990
+at work here, we don't we don't we steer
+
+00:42:24.000 --> 00:42:25.510
+away from fine-tuning as much as
+
+00:42:25.520 --> 00:42:27.589
+possible. Uh because by the time you're
+
+00:42:27.599 --> 00:42:29.349
+done fine-tuning your model, the next
+
+00:42:29.359 --> 00:42:31.030
+model is out and it's actually beating
+
+00:42:31.040 --> 00:42:32.630
+your fine tuned version of the previous
+
+00:42:32.640 --> 00:42:34.950
+model. So I would steer away from
+
+00:42:34.960 --> 00:42:37.030
+fine-tuning as much as you can. The
+
+00:42:37.040 --> 00:42:38.470
+advantage of the prompt engineering
+
+00:42:38.480 --> 00:42:40.470
+methods we've seen is you can put the
+
+00:42:40.480 --> 00:42:44.309
+next best pre-trained model directly in
+
+00:42:44.319 --> 00:42:45.910
+your code. It will update everything
+
+00:42:45.920 --> 00:42:47.510
+immediately. Fine-tuning doesn't work
+
+00:42:47.520 --> 00:42:50.239
+like that.
+
+00:42:50.249 --> 00:42:51.829
+[laughter] There are advantages though
+
+00:42:51.839 --> 00:42:54.069
+where it still makes sense. if the task
+
+00:42:54.079 --> 00:42:56.150
+requires repeated high precision output
+
+00:42:56.160 --> 00:42:58.790
+such as legal scientific explanation and
+
+00:42:58.800 --> 00:43:01.349
+if the general purpose LLM struggles
+
+00:43:01.359 --> 00:43:04.630
+with domain specific language. So, uh,
+
+00:43:04.640 --> 00:43:07.190
+let's look at a quick example together,
+
+00:43:07.200 --> 00:43:11.510
+um, which is an example, uh, from Ross
+
+00:43:11.520 --> 00:43:13.750
+Lazerovitz, um, I think it was a couple
+
+00:43:13.760 --> 00:43:18.790
+of years ago, September 23, where, um,
+
+00:43:18.800 --> 00:43:22.870
+uh, Ross tried to do Slack finetuning.
+
+00:43:22.880 --> 00:43:25.109
+So, he looked at a lot of Slack messages
+
+00:43:25.119 --> 00:43:27.990
+within his company and he was like, I'm
+
+00:43:28.000 --> 00:43:30.069
+going to fine-tune a model that speaks
+
+00:43:30.079 --> 00:43:32.230
+like us or operates like us because this
+
+00:43:32.240 --> 00:43:34.309
+is how we work, right? this is the data
+
+00:43:34.319 --> 00:43:36.230
+that represents how people work at the
+
+00:43:36.240 --> 00:43:40.390
+company. Um and so it he actually went
+
+00:43:40.400 --> 00:43:42.790
+ahead and fine-tuned the model. Um gave
+
+00:43:42.800 --> 00:43:45.670
+it a prompt like hey write a you know he
+
+00:43:45.680 --> 00:43:47.270
+was delegating to the model write a
+
+00:43:47.280 --> 00:43:50.470
+500word blog post on prompt engineering
+
+00:43:50.480 --> 00:43:52.950
+and the model responded I shall work on
+
+00:43:52.960 --> 00:43:56.069
+that in the morning. Um
+
+00:43:56.079 --> 00:43:58.390
+and and then he tries to push the model
+
+00:43:58.400 --> 00:44:00.630
+a little further and say it's morning
+
+00:44:00.640 --> 00:44:03.750
+now. Um, and the model said, "I'm
+
+00:44:03.760 --> 00:44:06.550
+writing right now. It's 6:30 a.m. here.
+
+00:44:06.560 --> 00:44:10.150
+Uh, write it now." Okay, please.
+
+00:44:10.160 --> 00:44:10.710
+[laughter]
+
+00:44:10.720 --> 00:44:12.710
+Okay, I shall write it now. I actually
+
+00:44:12.720 --> 00:44:14.230
+don't know what you would like me to say
+
+00:44:14.240 --> 00:44:16.230
+about prompt engineering. I can only
+
+00:44:16.240 --> 00:44:17.670
+describe the process. The only thing
+
+00:44:17.680 --> 00:44:19.510
+that comes to mind for a headline is how
+
+00:44:19.520 --> 00:44:22.550
+do we build prompt? You know, it's kind
+
+00:44:22.560 --> 00:44:25.030
+of a funny example for fine-tuning
+
+00:44:25.040 --> 00:44:27.750
+because it's true that it went wrong.
+
+00:44:27.760 --> 00:44:29.589
+like he was supposed to think like I
+
+00:44:29.599 --> 00:44:32.309
+want the model to speak like us at work
+
+00:44:32.319 --> 00:44:35.190
+and it ended up acting like people and
+
+00:44:35.200 --> 00:44:40.230
+not actually following instructions.
+
+00:44:40.240 --> 00:44:42.150
+So one example why I would steer away
+
+00:44:42.160 --> 00:44:47.430
+from fine tuning.
+
+00:44:47.440 --> 00:44:49.670
+Super
+
+00:44:49.680 --> 00:44:51.750
+uh
+
+00:44:51.760 --> 00:44:54.950
+let's talk about rags. Um rags is
+
+00:44:54.960 --> 00:44:56.710
+important. It's important to know out
+
+00:44:56.720 --> 00:44:58.470
+there and at least having the basics.
+
+00:44:58.480 --> 00:45:00.309
+It's a very common interview question by
+
+00:45:00.319 --> 00:45:02.790
+the way. If you go interview for a job,
+
+00:45:02.800 --> 00:45:04.390
+they might ask you to explain in a
+
+00:45:04.400 --> 00:45:06.550
+nutshell to a 5-year-old what is a rag
+
+00:45:06.560 --> 00:45:08.069
+and hopefully after that you'll be able
+
+00:45:08.079 --> 00:45:11.990
+to do it. Um, so, uh, we've seen some of
+
+00:45:12.000 --> 00:45:15.030
+the challenges with standalone LLMs.
+
+00:45:15.040 --> 00:45:17.349
+Those challenges include the context
+
+00:45:17.359 --> 00:45:20.150
+window being small, the fact that it's
+
+00:45:20.160 --> 00:45:22.390
+hard to remember details within a large
+
+00:45:22.400 --> 00:45:25.750
+context window, um, knowledge gaps, you
+
+00:45:25.760 --> 00:45:27.589
+know, uh, cutoff dates you mentioned
+
+00:45:27.599 --> 00:45:29.270
+earlier. The model might be trained up
+
+00:45:29.280 --> 00:45:31.030
+to a date and then it cannot follow the
+
+00:45:31.040 --> 00:45:34.550
+trends or be up to date. Hallucinations
+
+00:45:34.560 --> 00:45:36.550
+there are some fields think about
+
+00:45:36.560 --> 00:45:38.390
+medical diagnosis where hallucination
+
+00:45:38.400 --> 00:45:39.910
+are very costly. You can't afford a
+
+00:45:39.920 --> 00:45:41.990
+hallucination. You know even in
+
+00:45:42.000 --> 00:45:44.390
+education imagine deploying a model for
+
+00:45:44.400 --> 00:45:47.430
+the US youth education and it
+
+00:45:47.440 --> 00:45:49.190
+hallucinates and it teaches millions of
+
+00:45:49.200 --> 00:45:50.950
+people something completely wrong. It's
+
+00:45:50.960 --> 00:45:54.390
+a problem. Um and then lack of sources.
+
+00:45:54.400 --> 00:45:57.589
+Uh a lot of fields love sources.
+
+00:45:57.599 --> 00:46:00.390
+research fields love sources. Education
+
+00:46:00.400 --> 00:46:03.990
+loves sources. Legal loves sources as
+
+00:46:04.000 --> 00:46:07.190
+well. And so um the pre-trained LLM
+
+00:46:07.200 --> 00:46:09.430
+doesn't do a good job to source. And in
+
+00:46:09.440 --> 00:46:11.190
+fact, if you if you have tried to find
+
+00:46:11.200 --> 00:46:14.230
+sources on a plain LLM, it actually
+
+00:46:14.240 --> 00:46:16.230
+hallucinates a lot. It makes up research
+
+00:46:16.240 --> 00:46:18.390
+papers. It just lists like completely
+
+00:46:18.400 --> 00:46:21.670
+fake stuff. Um so how do we solve that?
+
+00:46:21.680 --> 00:46:25.109
+Um with a rag. Rag integrates with
+
+00:46:25.119 --> 00:46:28.230
+external knowledge sources, databases,
+
+00:46:28.240 --> 00:46:31.109
+documents, APIs.
+
+00:46:31.119 --> 00:46:34.230
+It ensures that answers are more
+
+00:46:34.240 --> 00:46:36.390
+accurate, upto-date and grounded because
+
+00:46:36.400 --> 00:46:38.230
+you can actually update your document.
+
+00:46:38.240 --> 00:46:40.870
+Your your drive is always up to date. I
+
+00:46:40.880 --> 00:46:42.710
+mean ideally you're always pushing new
+
+00:46:42.720 --> 00:46:45.190
+documents to it. And when you query what
+
+00:46:45.200 --> 00:46:47.750
+is our Q4 performance in sales,
+
+00:46:47.760 --> 00:46:49.990
+hopefully there is the last board deck
+
+00:46:50.000 --> 00:46:52.309
+in uh the drive and it can read the last
+
+00:46:52.319 --> 00:46:55.190
+board deck. Yeah. [snorts] Um and more
+
+00:46:55.200 --> 00:46:58.550
+developer control. We'll see why um rags
+
+00:46:58.560 --> 00:47:00.790
+allow for targeted customization without
+
+00:47:00.800 --> 00:47:02.470
+actually requiring the retraining of the
+
+00:47:02.480 --> 00:47:03.910
+model. In fact, you don't touch the
+
+00:47:03.920 --> 00:47:06.870
+model with rags. It's really a technique
+
+00:47:06.880 --> 00:47:09.750
+that is put on top of the model. So to
+
+00:47:09.760 --> 00:47:12.230
+see an example of a a rag, this is a
+
+00:47:12.240 --> 00:47:14.630
+question answering
+
+00:47:14.640 --> 00:47:17.030
+application where we're in the medical
+
+00:47:17.040 --> 00:47:21.910
+field and a user is asking uh a query.
+
+00:47:21.920 --> 00:47:26.230
+What are the side effects of drug X?
+
+00:47:26.240 --> 00:47:27.910
+This is an important question. You can't
+
+00:47:27.920 --> 00:47:29.910
+hallucinate. You need to source. You
+
+00:47:29.920 --> 00:47:32.630
+need to be up to date. Maybe there is a
+
+00:47:32.640 --> 00:47:34.150
+new
+
+00:47:34.160 --> 00:47:36.150
+update to that drug that is now in the
+
+00:47:36.160 --> 00:47:37.990
+database and you need to read that. So
+
+00:47:38.000 --> 00:47:39.670
+you have to like a rag is a great
+
+00:47:39.680 --> 00:47:41.109
+example of what you would want to use
+
+00:47:41.119 --> 00:47:43.430
+here. The the way it works is you have
+
+00:47:43.440 --> 00:47:45.190
+your knowledge base of a bunch of
+
+00:47:45.200 --> 00:47:49.030
+documents. Um what you do is you use an
+
+00:47:49.040 --> 00:47:51.910
+embedding to embed those documents into
+
+00:47:51.920 --> 00:47:54.630
+lower dimensional representations.
+
+00:47:54.640 --> 00:47:57.829
+So for example if the document is a PDF
+
+00:47:57.839 --> 00:48:01.270
+a long PDF uh you might you know read
+
+00:48:01.280 --> 00:48:03.910
+the PDF understand it and then embed it.
+
+00:48:03.920 --> 00:48:05.430
+We've seen plenty of embedding
+
+00:48:05.440 --> 00:48:08.150
+approaches together. triplet loss etc.
+
+00:48:08.160 --> 00:48:10.309
+you remember. So imagine one of them
+
+00:48:10.319 --> 00:48:12.710
+here for LLMs is embedding those
+
+00:48:12.720 --> 00:48:15.750
+documents into lower representation.
+
+00:48:15.760 --> 00:48:18.710
+If the representation is too small, you
+
+00:48:18.720 --> 00:48:20.630
+will lose information. If it's too big,
+
+00:48:20.640 --> 00:48:23.109
+you will add latency, right? It's a
+
+00:48:23.119 --> 00:48:25.829
+trade-off. Um
+
+00:48:25.839 --> 00:48:27.750
+you will store typically those
+
+00:48:27.760 --> 00:48:30.470
+representation into a database um called
+
+00:48:30.480 --> 00:48:32.710
+a vector database. There's a lot of
+
+00:48:32.720 --> 00:48:35.750
+vector database providers as out there.
+
+00:48:35.760 --> 00:48:39.910
+Um you know I I I think I've listed a
+
+00:48:39.920 --> 00:48:42.150
+couple that are very common. No I
+
+00:48:42.160 --> 00:48:43.589
+haven't listed but I can I can share
+
+00:48:43.599 --> 00:48:45.910
+afterwards. Um the vector database is
+
+00:48:45.920 --> 00:48:47.430
+essentially storing those vector in a
+
+00:48:47.440 --> 00:48:49.430
+very efficient manner allowing the fast
+
+00:48:49.440 --> 00:48:51.030
+retrieval
+
+00:48:51.040 --> 00:48:53.829
+with a certain distance metric. So um
+
+00:48:53.839 --> 00:48:56.390
+what you do is you also embed usually
+
+00:48:56.400 --> 00:49:00.230
+with the same algorithm the user prompts
+
+00:49:00.240 --> 00:49:03.190
+and you run a retrieval process which is
+
+00:49:03.200 --> 00:49:06.390
+essentially saying um based on the
+
+00:49:06.400 --> 00:49:09.190
+embedding from the user query and the
+
+00:49:09.200 --> 00:49:11.349
+vector database find the relevant
+
+00:49:11.359 --> 00:49:13.829
+documents based on the distance between
+
+00:49:13.839 --> 00:49:15.589
+those embeddings.
+
+00:49:15.599 --> 00:49:17.510
+Once you found the relevant documents,
+
+00:49:17.520 --> 00:49:19.829
+you pull them and then you add them to
+
+00:49:19.839 --> 00:49:22.870
+the user query with a system prompt or a
+
+00:49:22.880 --> 00:49:24.950
+prompt template on top. So the prompt
+
+00:49:24.960 --> 00:49:29.430
+template can be um answer user query
+
+00:49:29.440 --> 00:49:33.030
+based on list of documents.
+
+00:49:33.040 --> 00:49:35.910
+If answer not in the document say I
+
+00:49:35.920 --> 00:49:38.549
+don't know. That's your prompt templates
+
+00:49:38.559 --> 00:49:40.790
+where the user query is pasted. the
+
+00:49:40.800 --> 00:49:42.950
+documents are pasted and then your
+
+00:49:42.960 --> 00:49:45.270
+output um should be what you want
+
+00:49:45.280 --> 00:49:46.630
+because it's now grounded in the
+
+00:49:46.640 --> 00:49:49.270
+document. You can also add to this
+
+00:49:49.280 --> 00:49:52.309
+prompt templates tell me the exact page,
+
+00:49:52.319 --> 00:49:54.309
+chapter line of the document that was
+
+00:49:54.319 --> 00:49:56.390
+relevant and in fact link it as well
+
+00:49:56.400 --> 00:50:02.230
+just to be more precise.
+
+00:50:02.240 --> 00:50:05.190
+Any question on rags? There's a simple
+
+00:50:05.200 --> 00:50:07.430
+vanilla rag.
+
+00:50:07.440 --> 00:50:10.790
+Yeah. Yes. document embeddings still
+
+00:50:10.800 --> 00:50:13.430
+retain information about what's down on
+
+00:50:13.440 --> 00:50:15.750
+what page and what paragraph?
+
+00:50:15.760 --> 00:50:17.990
+&gt;&gt; Question is, do the document embeddings
+
+00:50:18.000 --> 00:50:20.470
+still retain the information of the
+
+00:50:20.480 --> 00:50:22.390
+location of the information within that
+
+00:50:22.400 --> 00:50:24.390
+document, especially in big documents?
+
+00:50:24.400 --> 00:50:26.950
+Um, great question. We'll get to it in a
+
+00:50:26.960 --> 00:50:29.030
+in a second because you're right that
+
+00:50:29.040 --> 00:50:31.109
+the vanilla rag might not do a good job
+
+00:50:31.119 --> 00:50:33.510
+with very large documents. So let's say
+
+00:50:33.520 --> 00:50:35.750
+uh you know when you open a medication
+
+00:50:35.760 --> 00:50:38.950
+box and you have this gigantic uh white
+
+00:50:38.960 --> 00:50:42.309
+paper with all the information and it's
+
+00:50:42.319 --> 00:50:45.349
+very long uh maybe a vanilla rag would
+
+00:50:45.359 --> 00:50:47.270
+not cut it. So what people have figured
+
+00:50:47.280 --> 00:50:49.270
+out is a bunch of techniques to improve
+
+00:50:49.280 --> 00:50:51.670
+rags and in fact chunking is a great
+
+00:50:51.680 --> 00:50:53.589
+technique that is very popular. So you
+
+00:50:53.599 --> 00:50:54.950
+might actually store in the vector
+
+00:50:54.960 --> 00:50:56.950
+database the embedding of the full
+
+00:50:56.960 --> 00:50:58.950
+document and on top of that you will
+
+00:50:58.960 --> 00:51:02.549
+also store a chapter level uh vector you
+
+00:51:02.559 --> 00:51:04.390
+know and when you retrieve you retrieve
+
+00:51:04.400 --> 00:51:06.549
+the document you retrieve the chapter
+
+00:51:06.559 --> 00:51:08.069
+and that allows you to be more precise
+
+00:51:08.079 --> 00:51:11.190
+with the sourcing. It's one example.
+
+00:51:11.200 --> 00:51:13.750
+Um another technique that's popular is
+
+00:51:13.760 --> 00:51:19.109
+hide um hypothetical document embeddings
+
+00:51:19.119 --> 00:51:21.910
+where a group of researchers
+
+00:51:21.920 --> 00:51:25.190
+um published a paper showing that when
+
+00:51:25.200 --> 00:51:27.510
+you get your user query one of the main
+
+00:51:27.520 --> 00:51:29.910
+problem is the user query actually does
+
+00:51:29.920 --> 00:51:32.710
+not look like your documents. For
+
+00:51:32.720 --> 00:51:34.790
+example, the user query might be what
+
+00:51:34.800 --> 00:51:37.030
+are the side effect of drug X when
+
+00:51:37.040 --> 00:51:39.430
+actually in the document in the vector
+
+00:51:39.440 --> 00:51:41.750
+database the vectors represents very
+
+00:51:41.760 --> 00:51:44.309
+long documents. So how do you guarantee
+
+00:51:44.319 --> 00:51:45.829
+that the vector embedding is going to be
+
+00:51:45.839 --> 00:51:47.910
+close to the document embedding? What
+
+00:51:47.920 --> 00:51:50.390
+they do is they use the user query to
+
+00:51:50.400 --> 00:51:53.829
+generate a fake hallucinated document.
+
+00:51:53.839 --> 00:51:56.230
+They embed that document and then they
+
+00:51:56.240 --> 00:52:00.150
+compare to the vector in the vector
+
+00:52:00.160 --> 00:52:02.870
+database. Does that make sense? So for
+
+00:52:02.880 --> 00:52:05.190
+example, the user says, "What is the
+
+00:52:05.200 --> 00:52:07.589
+side effect of drug X?" There's a prompt
+
+00:52:07.599 --> 00:52:09.030
+that this is given to another prompt
+
+00:52:09.040 --> 00:52:11.349
+that says, "Based on this user query,
+
+00:52:11.359 --> 00:52:14.390
+generate a five-page report answering
+
+00:52:14.400 --> 00:52:16.790
+the user query." It generates
+
+00:52:16.800 --> 00:52:19.910
+potentially a completely fake um u
+
+00:52:19.920 --> 00:52:23.670
+answer. You embed that and it will be
+
+00:52:23.680 --> 00:52:25.109
+closer to the document that you're
+
+00:52:25.119 --> 00:52:28.950
+looking for likely. Yeah,
+
+00:52:28.960 --> 00:52:31.910
+it's one example of a of a rag approach.
+
+00:52:31.920 --> 00:52:33.829
+Again, the purpose of this lecture is
+
+00:52:33.839 --> 00:52:35.750
+not to go through all these three and
+
+00:52:35.760 --> 00:52:37.349
+explain you every single methods that
+
+00:52:37.359 --> 00:52:39.670
+has been discovered for rags, but I just
+
+00:52:39.680 --> 00:52:41.270
+wanted to show you how much research has
+
+00:52:41.280 --> 00:52:44.790
+been done between 2020 and 2025 in rags
+
+00:52:44.800 --> 00:52:47.190
+and how many branches of research you
+
+00:52:47.200 --> 00:52:50.630
+you now have that you can uh learn from.
+
+00:52:50.640 --> 00:52:52.230
+The survey paper is linked in the
+
+00:52:52.240 --> 00:52:53.510
+slides, by the way, and I'll share them
+
+00:52:53.520 --> 00:52:58.086
+after the lecture.
+
+00:52:58.096 --> 00:53:01.829
+&gt;&gt; [laughter]
+
+00:53:01.839 --> 00:53:05.670
+&gt;&gt; Super.
+
+00:53:05.680 --> 00:53:08.950
+So, uh, we've made some progress.
+
+00:53:08.960 --> 00:53:10.710
+Hopefully now you feel like if you were
+
+00:53:10.720 --> 00:53:13.430
+to start an LLM application, you know
+
+00:53:13.440 --> 00:53:14.950
+how to do better prompts, you know how
+
+00:53:14.960 --> 00:53:16.150
+to do chains, you know how to do
+
+00:53:16.160 --> 00:53:18.390
+fine-tuning, uh you also know how to do
+
+00:53:18.400 --> 00:53:20.470
+retrieval and you have the baggage of
+
+00:53:20.480 --> 00:53:22.230
+techniques that you can go and read and
+
+00:53:22.240 --> 00:53:24.390
+find the codebase, pull the code, vi
+
+00:53:24.400 --> 00:53:29.430
+code it, but you have the breath. Now
+
+00:53:29.440 --> 00:53:33.670
+u the next set of uh topics we're going
+
+00:53:33.680 --> 00:53:36.549
+to see is around uh the question of how
+
+00:53:36.559 --> 00:53:38.870
+could we extend the capabilities of LLM
+
+00:53:38.880 --> 00:53:41.030
+from performing single tasks and hands
+
+00:53:41.040 --> 00:53:43.750
+with external knowledge to handling
+
+00:53:43.760 --> 00:53:47.430
+multi-step autonomous workflows. Yeah.
+
+00:53:47.440 --> 00:53:49.430
+And this is where we get into proper
+
+00:53:49.440 --> 00:53:53.270
+agent AI.
+
+00:53:53.280 --> 00:53:56.710
+So let's talk about agent TKI workflows
+
+00:53:56.720 --> 00:53:58.630
+towards autonomous and specialized
+
+00:53:58.640 --> 00:54:00.150
+systems.
+
+00:54:00.160 --> 00:54:02.069
+Then we'll talk about evals. Then we'll
+
+00:54:02.079 --> 00:54:04.549
+see multi- aent systems. And we'll end
+
+00:54:04.559 --> 00:54:08.150
+with a with a little
+
+00:54:08.160 --> 00:54:11.910
+thoughts on what's next in AI.
+
+00:54:11.920 --> 00:54:16.309
+So um Andrew Wang actually
+
+00:54:16.319 --> 00:54:20.470
+coined the term agentic AI workflows. Um
+
+00:54:20.480 --> 00:54:22.549
+and his reason was that a lot of
+
+00:54:22.559 --> 00:54:25.670
+companies use uh let's say agents,
+
+00:54:25.680 --> 00:54:27.270
+agents, agents everywhere. Agents
+
+00:54:27.280 --> 00:54:28.790
+everywhere.
+
+00:54:28.800 --> 00:54:30.710
+If you go and work at these companies,
+
+00:54:30.720 --> 00:54:32.630
+you would notice that they mean very
+
+00:54:32.640 --> 00:54:34.069
+different things by agent. Some people
+
+00:54:34.079 --> 00:54:35.430
+actually have a prompt and they call it
+
+00:54:35.440 --> 00:54:38.309
+an agent. You know, other people they
+
+00:54:38.319 --> 00:54:41.510
+have a very complex multi- aent system.
+
+00:54:41.520 --> 00:54:43.510
+They call it an agent. And so calling
+
+00:54:43.520 --> 00:54:44.950
+everything an agent doesn't do it
+
+00:54:44.960 --> 00:54:48.230
+justice. So Andrew says, "Let's call it
+
+00:54:48.240 --> 00:54:51.349
+agentic workflows because in practice
+
+00:54:51.359 --> 00:54:54.470
+it's a bunch of prompts with tools with
+
+00:54:54.480 --> 00:54:57.670
+additional resources, API calls that
+
+00:54:57.680 --> 00:54:59.990
+ultimately are put in a workflow and you
+
+00:55:00.000 --> 00:55:03.190
+can call that workflow agentic. So it's
+
+00:55:03.200 --> 00:55:07.030
+all about the multi-step process
+
+00:55:07.040 --> 00:55:11.349
+um to complete the task.
+
+00:55:11.359 --> 00:55:13.589
+Also calling it agentic workflow allows
+
+00:55:13.599 --> 00:55:15.910
+us to not mix it up with what I called
+
+00:55:15.920 --> 00:55:18.230
+agent the the last lecture with
+
+00:55:18.240 --> 00:55:20.230
+reinforcement learning because in RL
+
+00:55:20.240 --> 00:55:22.390
+agent has a very specific definition
+
+00:55:22.400 --> 00:55:24.230
+interacts with an environment passes
+
+00:55:24.240 --> 00:55:25.990
+from one state to the other has a reward
+
+00:55:26.000 --> 00:55:27.430
+and an observation. You remember that
+
+00:55:27.440 --> 00:55:31.670
+chart right?
+
+00:55:31.680 --> 00:55:34.549
+So um here's an example of how we move
+
+00:55:34.559 --> 00:55:37.910
+from a one-step prompt to a a multi-step
+
+00:55:37.920 --> 00:55:40.790
+agentic workflow. Let's say a user
+
+00:55:40.800 --> 00:55:44.230
+queries a a
+
+00:55:44.240 --> 00:55:46.630
+a product, what is your refund policy on
+
+00:55:46.640 --> 00:55:50.069
+a chatbot? Um, and the response using a
+
+00:55:50.079 --> 00:55:52.870
+rag says refunds are available within 30
+
+00:55:52.880 --> 00:55:54.789
+days of purchase. And maybe the rag can
+
+00:55:54.799 --> 00:55:57.510
+even look linked to the policy document.
+
+00:55:57.520 --> 00:55:59.750
+That's what we learned so far. Um,
+
+00:55:59.760 --> 00:56:02.789
+instead an agenting workflow can
+
+00:56:02.799 --> 00:56:05.349
+function like this. The user says, "Can
+
+00:56:05.359 --> 00:56:08.069
+I get a refund for my order?" And the
+
+00:56:08.079 --> 00:56:11.670
+response via the agentic workflow is the
+
+00:56:11.680 --> 00:56:13.589
+agent retrieves the refund policy using
+
+00:56:13.599 --> 00:56:15.990
+a rag. The agent then follows up with
+
+00:56:16.000 --> 00:56:18.309
+the users and says can you provide your
+
+00:56:18.319 --> 00:56:20.950
+order number? Um then the agent queries
+
+00:56:20.960 --> 00:56:23.270
+an API to check the order details and
+
+00:56:23.280 --> 00:56:25.510
+finally it comes back to the user and
+
+00:56:25.520 --> 00:56:27.670
+confirms your order qualifies for a
+
+00:56:27.680 --> 00:56:29.589
+refund. The amount will be processed in
+
+00:56:29.599 --> 00:56:31.829
+3 to five business days. This is much
+
+00:56:31.839 --> 00:56:33.829
+more thoughtful than the first version
+
+00:56:33.839 --> 00:56:38.069
+which is sort of vanilla, right?
+
+00:56:38.079 --> 00:56:39.430
+So that's what we're going to talk about
+
+00:56:39.440 --> 00:56:41.430
+in the next couple of slides is how do
+
+00:56:41.440 --> 00:56:42.870
+we get from the first one to the second
+
+00:56:42.880 --> 00:56:46.309
+one.
+
+00:56:46.319 --> 00:56:48.470
+Uh there are plenty of specialized
+
+00:56:48.480 --> 00:56:50.309
+agentic workflows online. You know,
+
+00:56:50.319 --> 00:56:52.309
+you've heard and if you hang out in SF,
+
+00:56:52.319 --> 00:56:54.789
+you probably see a bunch of billboards,
+
+00:56:54.799 --> 00:56:57.030
+you know, AI software engineer, AI
+
+00:56:57.040 --> 00:56:58.630
+skills mentor you've interacted with in
+
+00:56:58.640 --> 00:57:02.309
+the class to worker, AISDR, AI lawyers,
+
+00:57:02.319 --> 00:57:04.230
+AI,
+
+00:57:04.240 --> 00:57:08.230
+you know, specialized cloud engineer.
+
+00:57:08.240 --> 00:57:09.670
+You know, it would be a stretch to say
+
+00:57:09.680 --> 00:57:11.349
+that everything works, but there's work
+
+00:57:11.359 --> 00:57:17.910
+being done towards that. Yeah,
+
+00:57:17.920 --> 00:57:19.750
+I'm not personally a fan of putting a
+
+00:57:19.760 --> 00:57:21.430
+face behind those things. I think it's
+
+00:57:21.440 --> 00:57:23.109
+gimmicky and I think in a few years from
+
+00:57:23.119 --> 00:57:25.670
+now actually very few products will have
+
+00:57:25.680 --> 00:57:29.030
+a human face behind it. Uh but might be
+
+00:57:29.040 --> 00:57:32.069
+a marketing tactic from some startups.
+
+00:57:32.079 --> 00:57:33.829
+It's more scary than it is engaging
+
+00:57:33.839 --> 00:57:37.109
+frankly. Um okay, I want to talk about
+
+00:57:37.119 --> 00:57:39.430
+the pirating shift. Uh that's especially
+
+00:57:39.440 --> 00:57:41.430
+useful. Let's say you're a software
+
+00:57:41.440 --> 00:57:43.109
+engineer or you're planning to be a
+
+00:57:43.119 --> 00:57:44.710
+software engineer because software
+
+00:57:44.720 --> 00:57:46.789
+engineering as a discipline is sort of
+
+00:57:46.799 --> 00:57:48.870
+shifting or at least the best engineers
+
+00:57:48.880 --> 00:57:51.910
+I've worked with are able to move from a
+
+00:57:51.920 --> 00:57:55.750
+deterministic mindset to a fuzzy mindset
+
+00:57:55.760 --> 00:57:57.510
+and balance between the two whenever
+
+00:57:57.520 --> 00:57:59.109
+they need to get something done. So
+
+00:57:59.119 --> 00:58:00.630
+here's the paring shift between
+
+00:58:00.640 --> 00:58:03.510
+traditional software and agent TKI
+
+00:58:03.520 --> 00:58:06.549
+software. The first one is uh the way
+
+00:58:06.559 --> 00:58:08.789
+you handle data. Traditional software
+
+00:58:08.799 --> 00:58:10.630
+deals with structured data. You have
+
+00:58:10.640 --> 00:58:13.030
+JSONs, you have databases. They're
+
+00:58:13.040 --> 00:58:16.230
+pasted in a very structured manner in a
+
+00:58:16.240 --> 00:58:18.230
+data engineering pipeline and then
+
+00:58:18.240 --> 00:58:19.750
+they're used to be displayed on a
+
+00:58:19.760 --> 00:58:22.230
+certain interface. The user might feel
+
+00:58:22.240 --> 00:58:24.390
+fill a form that is then retrieved and
+
+00:58:24.400 --> 00:58:26.230
+pasted in the database. All of that
+
+00:58:26.240 --> 00:58:28.390
+historically has been structured data.
+
+00:58:28.400 --> 00:58:31.190
+Now more and more companies are handling
+
+00:58:31.200 --> 00:58:35.190
+uh free form text, images um and and all
+
+00:58:35.200 --> 00:58:37.990
+of that requires dynamic interpretation
+
+00:58:38.000 --> 00:58:40.230
+um uh to transform an input into an
+
+00:58:40.240 --> 00:58:44.470
+output. Um the software itself used to
+
+00:58:44.480 --> 00:58:46.230
+be deterministic. Now you have a lot of
+
+00:58:46.240 --> 00:58:48.710
+software that is fuzzy and fuzzy
+
+00:58:48.720 --> 00:58:52.069
+software creates so many issues. I mean,
+
+00:58:52.079 --> 00:58:53.910
+imagine if you let your user ask
+
+00:58:53.920 --> 00:58:56.309
+anything on your website.
+
+00:58:56.319 --> 00:58:58.069
+The chances that it breaks is
+
+00:58:58.079 --> 00:58:59.510
+tremendous. The chances that you're
+
+00:58:59.520 --> 00:59:01.510
+attacked is tremendous. The chances,
+
+00:59:01.520 --> 00:59:03.349
+it's really, really complicated. It's
+
+00:59:03.359 --> 00:59:04.870
+more complicated than people make it
+
+00:59:04.880 --> 00:59:08.150
+seem uh on Twitter. [snorts] Um, fuzzy
+
+00:59:08.160 --> 00:59:11.349
+engineering is truly hard. Yeah, you
+
+00:59:11.359 --> 00:59:13.190
+might get hate as a company because one
+
+00:59:13.200 --> 00:59:14.950
+user did something that you authorized
+
+00:59:14.960 --> 00:59:16.789
+them to do that ended up breaking the
+
+00:59:16.799 --> 00:59:18.470
+database and ended up, you know, we've
+
+00:59:18.480 --> 00:59:20.069
+seen that with many companies in the
+
+00:59:20.079 --> 00:59:21.990
+last couple of years. So, it takes a
+
+00:59:22.000 --> 00:59:24.150
+very specialized engineering mindset to
+
+00:59:24.160 --> 00:59:26.230
+do fuzzy engineering, but also know when
+
+00:59:26.240 --> 00:59:28.950
+you need to be deterministic.
+
+00:59:28.960 --> 00:59:31.589
+Um, the other thing I call is with
+
+00:59:31.599 --> 00:59:34.549
+agentic AI software, um, you you you
+
+00:59:34.559 --> 00:59:36.630
+sort of want to think about your
+
+00:59:36.640 --> 00:59:40.150
+software as like your manager. So you're
+
+00:59:40.160 --> 00:59:43.190
+familiar with the monolith or or you
+
+00:59:43.200 --> 00:59:45.190
+know microservices approaches in
+
+00:59:45.200 --> 00:59:47.030
+software you know where you structure
+
+00:59:47.040 --> 00:59:49.589
+your software in different you know
+
+00:59:49.599 --> 00:59:52.150
+boxes that can talk to each other and it
+
+00:59:52.160 --> 00:59:54.710
+allows teams to debug one section at a
+
+00:59:54.720 --> 00:59:57.190
+time you know now the equivalent with
+
+00:59:57.200 --> 00:59:59.270
+agentic AI is you think as a manager. So
+
+00:59:59.280 --> 01:00:01.990
+you think okay if I was to delegate my
+
+01:00:02.000 --> 01:00:04.870
+product to be done by a group of humans
+
+01:00:04.880 --> 01:00:06.470
+what would be those roles? Would I have
+
+01:00:06.480 --> 01:00:08.390
+a graphic designer that then you know
+
+01:00:08.400 --> 01:00:10.549
+puts together a chart and then sends it
+
+01:00:10.559 --> 01:00:12.549
+to a marketing manager that converts it
+
+01:00:12.559 --> 01:00:14.710
+into a nice blog post that then gives it
+
+01:00:14.720 --> 01:00:16.950
+to the performance marketing expert that
+
+01:00:16.960 --> 01:00:18.950
+then publishes the work the blog post
+
+01:00:18.960 --> 01:00:21.190
+and then optimizes and AB tests then to
+
+01:00:21.200 --> 01:00:23.430
+a data scientist that analyzes the data
+
+01:00:23.440 --> 01:00:25.910
+and then puts hypothesis and validates
+
+01:00:25.920 --> 01:00:28.230
+them or invalidates them. That's how you
+
+01:00:28.240 --> 01:00:29.910
+would typically think if you're building
+
+01:00:29.920 --> 01:00:32.710
+an agency AI software
+
+01:00:32.720 --> 01:00:35.109
+when actually the equivalent of that in
+
+01:00:35.119 --> 01:00:36.789
+traditional software might be completely
+
+01:00:36.799 --> 01:00:39.030
+different. It might be we have a data
+
+01:00:39.040 --> 01:00:41.270
+engineer box right here that handles all
+
+01:00:41.280 --> 01:00:43.829
+our data engineering. And then here we
+
+01:00:43.839 --> 01:00:47.030
+have the UIUX stuff. Everything UIUIX
+
+01:00:47.040 --> 01:00:48.950
+related goes here. And you know
+
+01:00:48.960 --> 01:00:50.470
+companies might structure it in very
+
+01:00:50.480 --> 01:00:51.990
+different ways. And here's the business
+
+01:00:52.000 --> 01:00:53.990
+logic that we want to care about. And
+
+01:00:54.000 --> 01:00:55.349
+there's five engineers working on the
+
+01:00:55.359 --> 01:00:59.349
+business logic. let's say
+
+01:00:59.359 --> 01:01:01.589
+okay [snorts and laughter] uh testing
+
+01:01:01.599 --> 01:01:04.549
+and debugging is also very different um
+
+01:01:04.559 --> 01:01:06.150
+and we'll talk about it in the next
+
+01:01:06.160 --> 01:01:09.430
+section.
+
+01:01:09.440 --> 01:01:12.710
+uh the other thing that uh I feel
+
+01:01:12.720 --> 01:01:16.309
+matters is with AI in engineering the
+
+01:01:16.319 --> 01:01:18.150
+cost of experimentation is going down
+
+01:01:18.160 --> 01:01:20.950
+drastically and so people I feel should
+
+01:01:20.960 --> 01:01:23.750
+be more comfortable throwing away code
+
+01:01:23.760 --> 01:01:25.990
+you know it's it's like in traditional
+
+01:01:26.000 --> 01:01:28.230
+software engineering you probably don't
+
+01:01:28.240 --> 01:01:30.230
+throw away code a ton you you build a
+
+01:01:30.240 --> 01:01:32.309
+code and it's solid and it's bulletproof
+
+01:01:32.319 --> 01:01:34.549
+and then you you update it over time
+
+01:01:34.559 --> 01:01:37.670
+when we've seen AI companies be more
+
+01:01:37.680 --> 01:01:40.549
+comfortable throwing away codes. Yeah.
+
+01:01:40.559 --> 01:01:42.950
+Which has advantages in terms of the
+
+01:01:42.960 --> 01:01:44.950
+speed at which you move but also
+
+01:01:44.960 --> 01:01:47.670
+disadvantages in terms of the quality of
+
+01:01:47.680 --> 01:01:49.829
+your software that it can break more.
+
+01:01:49.839 --> 01:01:52.630
+No.
+
+01:01:52.640 --> 01:01:54.470
+Okay. So anyway, just wanted to do an
+
+01:01:54.480 --> 01:01:57.270
+aparte on the the parading shift from
+
+01:01:57.280 --> 01:02:01.430
+deterministic to fuzzy engineering.
+
+01:02:01.440 --> 01:02:04.549
+Um,
+
+01:02:04.559 --> 01:02:05.990
+oh, and actually I can give you an
+
+01:02:06.000 --> 01:02:08.789
+example from uh from worker that we
+
+01:02:08.799 --> 01:02:11.349
+learned uh probably over the last 12
+
+01:02:11.359 --> 01:02:13.109
+months is like if you if you've used
+
+01:02:13.119 --> 01:02:14.950
+worker you might have seen that the
+
+01:02:14.960 --> 01:02:18.069
+interface has um asks you sometimes
+
+01:02:18.079 --> 01:02:20.150
+multiple choice questions and sometimes
+
+01:02:20.160 --> 01:02:21.589
+it asks you multiple select and
+
+01:02:21.599 --> 01:02:23.109
+sometimes it asks you drag and drop
+
+01:02:23.119 --> 01:02:25.670
+ordering matching whatever right those
+
+01:02:25.680 --> 01:02:28.630
+are example of deterministic item types
+
+01:02:28.640 --> 01:02:30.710
+meaning you answer the question on a
+
+01:02:30.720 --> 01:02:32.230
+multiple le choice there's one correct
+
+01:02:32.240 --> 01:02:35.030
+answer it's fully deterministic. On the
+
+01:02:35.040 --> 01:02:37.270
+other hand you sometimes have voice
+
+01:02:37.280 --> 01:02:39.510
+questions uh where you go through a role
+
+01:02:39.520 --> 01:02:41.750
+play or you have voice plus coding
+
+01:02:41.760 --> 01:02:43.589
+questions where your code is being read
+
+01:02:43.599 --> 01:02:46.549
+by the interface or whatever. Those are
+
+01:02:46.559 --> 01:02:49.670
+fuzzy, meaning the scoring algorithm
+
+01:02:49.680 --> 01:02:51.990
+might actually make mistakes and those
+
+01:02:52.000 --> 01:02:54.069
+mistakes might be costly. And so
+
+01:02:54.079 --> 01:02:56.789
+companies have to figure out a human in
+
+01:02:56.799 --> 01:02:59.030
+the loop system, which you might have
+
+01:02:59.040 --> 01:03:00.630
+seen with the appeal feature at the end.
+
+01:03:00.640 --> 01:03:01.750
+So at the end of the assessment, you
+
+01:03:01.760 --> 01:03:03.589
+have an appeal feature where it allows
+
+01:03:03.599 --> 01:03:06.549
+you to say, I want to appeal the agent
+
+01:03:06.559 --> 01:03:08.069
+because I want to challenge what the
+
+01:03:08.079 --> 01:03:10.150
+agent said on my answer because I
+
+01:03:10.160 --> 01:03:11.910
+thought I was better than what the agent
+
+01:03:11.920 --> 01:03:13.670
+thought. And then you bring a human in
+
+01:03:13.680 --> 01:03:15.349
+the loop that then can fix the agent,
+
+01:03:15.359 --> 01:03:16.630
+can tell the agent, actually you were
+
+01:03:16.640 --> 01:03:19.589
+too harsh on the answer of this person.
+
+01:03:19.599 --> 01:03:22.390
+Um, and you know, that's an example of a
+
+01:03:22.400 --> 01:03:25.430
+fuzzy engineered system that then adds a
+
+01:03:25.440 --> 01:03:27.349
+human in the loop to make it more
+
+01:03:27.359 --> 01:03:29.430
+aligned. And so if you're building a
+
+01:03:29.440 --> 01:03:31.109
+company, I would encourage you to think
+
+01:03:31.119 --> 01:03:32.950
+about what can I get done with
+
+01:03:32.960 --> 01:03:35.270
+determinism and let's get that done. And
+
+01:03:35.280 --> 01:03:38.150
+then the fuzzy stuff, I want to do fuzzy
+
+01:03:38.160 --> 01:03:40.150
+because it allows more interaction. It
+
+01:03:40.160 --> 01:03:42.150
+allows more back and forth, but I need
+
+01:03:42.160 --> 01:03:44.230
+to put guard rails around it. And how am
+
+01:03:44.240 --> 01:03:45.750
+I going to design those guard rails
+
+01:03:45.760 --> 01:03:49.190
+pretty much? All right,
+
+01:03:49.200 --> 01:03:51.349
+here's another example uh from
+
+01:03:51.359 --> 01:03:54.950
+enterprise workflows um which are likely
+
+01:03:54.960 --> 01:03:58.230
+to change due to agent AI. Um this is a
+
+01:03:58.240 --> 01:04:00.630
+paper from McKenzie uh I believe from
+
+01:04:00.640 --> 01:04:02.950
+last year where they looked at a
+
+01:04:02.960 --> 01:04:05.029
+financial institution and they said that
+
+01:04:05.039 --> 01:04:06.470
+you know we observe that they often
+
+01:04:06.480 --> 01:04:08.549
+spend one to four weeks to create a
+
+01:04:08.559 --> 01:04:10.950
+credit risk memo and here is the
+
+01:04:10.960 --> 01:04:14.309
+process. A relationship manager
+
+01:04:14.319 --> 01:04:17.750
+um gathers data from 15 and more than 15
+
+01:04:17.760 --> 01:04:21.430
+sources on the borrower loan type other
+
+01:04:21.440 --> 01:04:24.230
+factors. Then the relationship manager
+
+01:04:24.240 --> 01:04:26.309
+and the credit analyst collaboratively
+
+01:04:26.319 --> 01:04:28.870
+analyze that data from these sources.
+
+01:04:28.880 --> 01:04:31.670
+Then the credit analyst typically spends
+
+01:04:31.680 --> 01:04:34.150
+you know 20 more 20 hours or more
+
+01:04:34.160 --> 01:04:36.470
+writing a memo and then goes back to the
+
+01:04:36.480 --> 01:04:38.950
+relationship manager. They give feedback
+
+01:04:38.960 --> 01:04:40.549
+and then they go through this loop again
+
+01:04:40.559 --> 01:04:43.750
+and again and uh it takes a long time to
+
+01:04:43.760 --> 01:04:47.190
+get a credit memo out and then then run
+
+01:04:47.200 --> 01:04:49.990
+a a research study where they changed
+
+01:04:50.000 --> 01:04:52.390
+the process. They said Genai agents
+
+01:04:52.400 --> 01:04:56.230
+could actually cut time um by 20 to 60%
+
+01:04:56.240 --> 01:04:59.510
+on credit risk memos and the process has
+
+01:04:59.520 --> 01:05:01.190
+changed to the relationship manager
+
+01:05:01.200 --> 01:05:02.870
+directly work with the genai agent
+
+01:05:02.880 --> 01:05:05.670
+system provides relevant materials that
+
+01:05:05.680 --> 01:05:07.910
+needs to produce the memo. The agent
+
+01:05:07.920 --> 01:05:10.390
+subsizes the project into tasks that are
+
+01:05:10.400 --> 01:05:12.789
+assigned to specialist agents gathers
+
+01:05:12.799 --> 01:05:14.549
+and analyzes the data from multiple
+
+01:05:14.559 --> 01:05:17.510
+sources. Drafts a memo. Then the
+
+01:05:17.520 --> 01:05:18.870
+relationship manager and the credit
+
+01:05:18.880 --> 01:05:20.630
+analyst sit down together, review the
+
+01:05:20.640 --> 01:05:22.710
+memo, give feedback to the agent, and
+
+01:05:22.720 --> 01:05:25.750
+within, you know, 20 to 60% less time
+
+01:05:25.760 --> 01:05:27.990
+are done. And so this is an example
+
+01:05:28.000 --> 01:05:30.309
+where you're actually not changing the
+
+01:05:30.319 --> 01:05:32.069
+human stakeholders, you're just changing
+
+01:05:32.079 --> 01:05:35.829
+the process and adding genai to uh
+
+01:05:35.839 --> 01:05:37.589
+reduce the time it takes to get a credit
+
+01:05:37.599 --> 01:05:41.510
+memo out. It turns out that um imagine
+
+01:05:41.520 --> 01:05:43.990
+you're an enterprise and you have you
+
+01:05:44.000 --> 01:05:46.470
+know 100,000 employees and there's a lot
+
+01:05:46.480 --> 01:05:48.870
+of enterprises with 100,000 employees
+
+01:05:48.880 --> 01:05:51.670
+out there. Uh you are currently under
+
+01:05:51.680 --> 01:05:53.670
+crisis in terms of redesigning your
+
+01:05:53.680 --> 01:05:56.470
+workflows. You you are you know it turns
+
+01:05:56.480 --> 01:05:58.069
+out that if you actually pull the job
+
+01:05:58.079 --> 01:06:01.029
+descriptions from the HR system and you
+
+01:06:01.039 --> 01:06:02.950
+interpret them you also pull the
+
+01:06:02.960 --> 01:06:04.870
+business process workflows that you have
+
+01:06:04.880 --> 01:06:08.230
+encoded in your drive. you actually can
+
+01:06:08.240 --> 01:06:11.750
+find gains in multiple places and uh in
+
+01:06:11.760 --> 01:06:13.029
+the next few years you're probably going
+
+01:06:13.039 --> 01:06:15.510
+to see workflows being more optimized to
+
+01:06:15.520 --> 01:06:18.309
+add genai. Um even if that happens the
+
+01:06:18.319 --> 01:06:20.470
+hardest part is changing people. What we
+
+01:06:20.480 --> 01:06:23.109
+know this is this is great in theory but
+
+01:06:23.119 --> 01:06:26.069
+now let's try to fit that second
+
+01:06:26.079 --> 01:06:29.430
+workflow for 10,000 credit risk analysts
+
+01:06:29.440 --> 01:06:32.309
+and relationship managers. My guess is
+
+01:06:32.319 --> 01:06:34.630
+it will take years. It will take 10 20
+
+01:06:34.640 --> 01:06:37.589
+years to get to this being actually done
+
+01:06:37.599 --> 01:06:40.710
+at scale within an organization because
+
+01:06:40.720 --> 01:06:43.109
+change is so hard you know so hard to
+
+01:06:43.119 --> 01:06:46.470
+rewire business workflows job
+
+01:06:46.480 --> 01:06:49.029
+descriptions incentivize people to do
+
+01:06:49.039 --> 01:06:50.710
+different and be different and train
+
+01:06:50.720 --> 01:06:54.309
+them and so so you know this is what the
+
+01:06:54.319 --> 01:06:55.750
+world is going towards but it's going to
+
+01:06:55.760 --> 01:06:58.789
+take a long time I think
+
+01:06:58.799 --> 01:07:01.589
+um okay then I want to talk about how
+
+01:07:01.599 --> 01:07:03.349
+the agent actually works and What are
+
+01:07:03.359 --> 01:07:07.190
+the core core components of an agent? U
+
+01:07:07.200 --> 01:07:09.990
+imagine um a travel booking AI agent.
+
+01:07:10.000 --> 01:07:11.750
+That's an easy example you've all
+
+01:07:11.760 --> 01:07:13.430
+thought about. I still haven't been able
+
+01:07:13.440 --> 01:07:16.230
+to get an agent to book a trip for me or
+
+01:07:16.240 --> 01:07:18.069
+or I was scared because it was going to
+
+01:07:18.079 --> 01:07:20.870
+book a very expensive or long trip. But
+
+01:07:20.880 --> 01:07:24.230
+in theory um uh you you can you can have
+
+01:07:24.240 --> 01:07:26.470
+a travel booking agent that has prompts.
+
+01:07:26.480 --> 01:07:28.470
+So the prompts we've seen we know the
+
+01:07:28.480 --> 01:07:30.870
+methods to optimize those prompts. That
+
+01:07:30.880 --> 01:07:32.710
+travel agent also has a content
+
+01:07:32.720 --> 01:07:34.870
+management context management system
+
+01:07:34.880 --> 01:07:36.710
+which is essentially the memory of what
+
+01:07:36.720 --> 01:07:39.190
+it knows about the user. That context
+
+01:07:39.200 --> 01:07:41.750
+management system might include a core
+
+01:07:41.760 --> 01:07:45.109
+memory or working memory and an archival
+
+01:07:45.119 --> 01:07:48.789
+memory. Okay. What the difference is um
+
+01:07:48.799 --> 01:07:52.630
+within memory um is not every memory
+
+01:07:52.640 --> 01:07:55.750
+needs to be fast to access. Like think
+
+01:07:55.760 --> 01:07:57.829
+about it. you you're born on a product
+
+01:07:57.839 --> 01:08:00.230
+and the first question is hi what's your
+
+01:08:00.240 --> 01:08:03.430
+name and I say my name is Keon that's
+
+01:08:03.440 --> 01:08:05.109
+probably going to sit in the working
+
+01:08:05.119 --> 01:08:06.789
+memory because the agent every time he's
+
+01:08:06.799 --> 01:08:07.910
+going to talk to me is going to want to
+
+01:08:07.920 --> 01:08:10.230
+use my name right but then maybe the
+
+01:08:10.240 --> 01:08:11.910
+second question is Keon what's your
+
+01:08:11.920 --> 01:08:13.990
+birthday and I give it my birthday does
+
+01:08:14.000 --> 01:08:15.910
+it need my birthday every day probably
+
+01:08:15.920 --> 01:08:18.149
+not so it's probably going to park it on
+
+01:08:18.159 --> 01:08:20.149
+the long-term memory or the archival
+
+01:08:20.159 --> 01:08:23.590
+memory and those memories are slower to
+
+01:08:23.600 --> 01:08:26.789
+access they're farther down the stack
+
+01:08:26.799 --> 01:08:28.870
+and you know that structure allows agent
+
+01:08:28.880 --> 01:08:30.870
+to determine what's the working memory
+
+01:08:30.880 --> 01:08:33.189
+and what's the long-term memory you know
+
+01:08:33.199 --> 01:08:34.789
+and that makes it easier for the agent
+
+01:08:34.799 --> 01:08:36.789
+to retrieve super fast cuz think about
+
+01:08:36.799 --> 01:08:39.669
+it when you interact with GPT you feel
+
+01:08:39.679 --> 01:08:41.349
+that it's very personal at times right
+
+01:08:41.359 --> 01:08:43.829
+you feel like it understands you um
+
+01:08:43.839 --> 01:08:46.390
+imagine every time you call it it has to
+
+01:08:46.400 --> 01:08:48.229
+read the memories right and that can be
+
+01:08:48.239 --> 01:08:50.870
+costly it's like a very it's a very
+
+01:08:50.880 --> 01:08:52.950
+burdensome cost because it happens every
+
+01:08:52.960 --> 01:08:55.590
+time you you talk to it So you want to
+
+01:08:55.600 --> 01:08:57.430
+be highly optimized with the working
+
+01:08:57.440 --> 01:09:00.149
+memory. You know, if it takes 3 seconds
+
+01:09:00.159 --> 01:09:02.070
+to look in the memory, every time you're
+
+01:09:02.080 --> 01:09:03.269
+going to talk to your LLM, it's going to
+
+01:09:03.279 --> 01:09:06.229
+take 3 seconds, which you don't want. So
+
+01:09:06.239 --> 01:09:08.309
+anyway, and then you have the tools. The
+
+01:09:08.319 --> 01:09:11.269
+tools can include uh APIs like a flight
+
+01:09:11.279 --> 01:09:13.590
+search API, hotel booking API, car
+
+01:09:13.600 --> 01:09:16.630
+rental API, weather API, and then the
+
+01:09:16.640 --> 01:09:19.269
+payment processing API. And typically,
+
+01:09:19.279 --> 01:09:22.070
+you would want to tell your agent how
+
+01:09:22.080 --> 01:09:25.189
+that API works. It turns out that agents
+
+01:09:25.199 --> 01:09:27.990
+or LLMs I should say are very good at
+
+01:09:28.000 --> 01:09:29.990
+reading API documentation. So you give
+
+01:09:30.000 --> 01:09:31.910
+it the API documentation and it reads
+
+01:09:31.920 --> 01:09:34.309
+the JSON and it reads what does a get
+
+01:09:34.319 --> 01:09:37.110
+request look like and this is the format
+
+01:09:37.120 --> 01:09:39.030
+that I need to push and then it pushes
+
+01:09:39.040 --> 01:09:42.149
+it in that format let's say and then it
+
+01:09:42.159 --> 01:09:45.110
+retrieves something.
+
+01:09:45.120 --> 01:09:46.470
+Does that make sense? Those different
+
+01:09:46.480 --> 01:09:49.110
+components
+
+01:09:49.120 --> 01:09:50.950
+you know entropic also talks about
+
+01:09:50.960 --> 01:09:53.990
+resources. resources is data that is
+
+01:09:54.000 --> 01:09:56.070
+sitting somewhere that you might let
+
+01:09:56.080 --> 01:09:58.630
+your agent read. For example, if you're
+
+01:09:58.640 --> 01:10:00.790
+building your startups, you have a CRM.
+
+01:10:00.800 --> 01:10:03.510
+A CRM has data in it and you want to use
+
+01:10:03.520 --> 01:10:05.830
+lookups in that data. You will probably
+
+01:10:05.840 --> 01:10:08.630
+give a lookup tool and you will give
+
+01:10:08.640 --> 01:10:10.950
+access to the resource and it will do
+
+01:10:10.960 --> 01:10:15.669
+lookups whenever you want. Super fast.
+
+01:10:15.679 --> 01:10:18.870
+uh this type of architecture can be
+
+01:10:18.880 --> 01:10:21.110
+built with different degrees of autonomy
+
+01:10:21.120 --> 01:10:22.790
+from the least autonomous to the most
+
+01:10:22.800 --> 01:10:24.630
+autonomous and I'll give you a few
+
+01:10:24.640 --> 01:10:26.310
+examples
+
+01:10:26.320 --> 01:10:28.470
+less autonomous would be you've
+
+01:10:28.480 --> 01:10:30.470
+hardcoded the steps so let's say I tell
+
+01:10:30.480 --> 01:10:32.790
+the travel agent
+
+01:10:32.800 --> 01:10:37.110
+first identify the intent then um look
+
+01:10:37.120 --> 01:10:39.830
+up in the database the history of this
+
+01:10:39.840 --> 01:10:42.550
+customer with us and their preferences
+
+01:10:42.560 --> 01:10:45.270
+then go to the write API blah blah blah
+
+01:10:45.280 --> 01:10:47.030
+then go to the I would hardcode the
+
+01:10:47.040 --> 01:10:49.110
+steps. Okay, that's the least
+
+01:10:49.120 --> 01:10:52.790
+autonomous. The semi autonomous is I
+
+01:10:52.800 --> 01:10:55.430
+might hardcode the tools but I'm not
+
+01:10:55.440 --> 01:10:57.510
+going to hardcode the steps. So, I'm
+
+01:10:57.520 --> 01:11:00.630
+going to tell the agent um your act like
+
+01:11:00.640 --> 01:11:03.990
+a travel agent and
+
+01:11:04.000 --> 01:11:08.470
+um and uh you your task is to help the
+
+01:11:08.480 --> 01:11:11.030
+person book a travel and these are the
+
+01:11:11.040 --> 01:11:12.470
+tools that you have accessible to
+
+01:11:12.480 --> 01:11:14.709
+yourself. And so I'm not hard coding the
+
+01:11:14.719 --> 01:11:16.149
+steps. I'm just hard coding the tools
+
+01:11:16.159 --> 01:11:19.030
+that you have access to for yourself. Uh
+
+01:11:19.040 --> 01:11:21.750
+the more autonomous is the agent decides
+
+01:11:21.760 --> 01:11:25.030
+the steps and can create the tools. So
+
+01:11:25.040 --> 01:11:26.390
+that's where you might give actually
+
+01:11:26.400 --> 01:11:29.110
+access to a code editor to the agent and
+
+01:11:29.120 --> 01:11:31.910
+the agent might actually be able to ping
+
+01:11:31.920 --> 01:11:34.149
+any API in the web, perform some web
+
+01:11:34.159 --> 01:11:36.630
+search. It might even be able to create
+
+01:11:36.640 --> 01:11:39.189
+some code to display data to the user.
+
+01:11:39.199 --> 01:11:41.430
+It might even be able to perform some
+
+01:11:41.440 --> 01:11:43.430
+calculations like, oh, I'm going to
+
+01:11:43.440 --> 01:11:45.750
+calculate the fastest route to get from
+
+01:11:45.760 --> 01:11:48.630
+San Francisco to New York. Um, and which
+
+01:11:48.640 --> 01:11:51.030
+one might be the most appropriate for
+
+01:11:51.040 --> 01:11:52.950
+what the user is looking for. And then I
+
+01:11:52.960 --> 01:11:54.310
+want to calculate the distance between
+
+01:11:54.320 --> 01:11:56.310
+the airport and that hotel versus that
+
+01:11:56.320 --> 01:11:58.149
+hotel. And I'm going to write code to do
+
+01:11:58.159 --> 01:12:00.550
+that. So it's actually fully autonomous
+
+01:12:00.560 --> 01:12:05.189
+from that perspective.
+
+01:12:05.199 --> 01:12:06.950
+Okay.
+
+01:12:06.960 --> 01:12:08.870
+So yeah, remember those keywords,
+
+01:12:08.880 --> 01:12:14.550
+memory, uh prompts, tools, etc.
+
+01:12:14.560 --> 01:12:18.149
+Now I presented the flight API, but it
+
+01:12:18.159 --> 01:12:20.070
+does not have to be an API. Uh you
+
+01:12:20.080 --> 01:12:22.149
+probably have heard the term MCP or
+
+01:12:22.159 --> 01:12:24.149
+model context protocol that was coined
+
+01:12:24.159 --> 01:12:26.709
+by anthropic. I I pasted the seminal
+
+01:12:26.719 --> 01:12:29.189
+article on MCP at the bottom of this
+
+01:12:29.199 --> 01:12:31.350
+slide. But let me explain in a nutshell
+
+01:12:31.360 --> 01:12:34.870
+why those things would differ. Um uh in
+
+01:12:34.880 --> 01:12:39.750
+in the API case um you would actually
+
+01:12:39.760 --> 01:12:43.110
+teach your LLM to ping an API. So you
+
+01:12:43.120 --> 01:12:45.590
+would say this is how you ping this API
+
+01:12:45.600 --> 01:12:47.270
+and this is the data that it will send
+
+01:12:47.280 --> 01:12:50.070
+you back and um you would have to do
+
+01:12:50.080 --> 01:12:51.910
+that in a one-off manner. So you would
+
+01:12:51.920 --> 01:12:54.229
+have to build or sort of give the API
+
+01:12:54.239 --> 01:12:57.110
+documentation of your flight API, your
+
+01:12:57.120 --> 01:13:00.790
+booking hotel API, your car rental API
+
+01:13:00.800 --> 01:13:02.790
+and then you would give tools for your
+
+01:13:02.800 --> 01:13:06.630
+model to communicate with those APIs. Um
+
+01:13:06.640 --> 01:13:09.750
+it doesn't scale very well um you know
+
+01:13:09.760 --> 01:13:15.430
+versus MCP. MCP um it's really about you
+
+01:13:15.440 --> 01:13:18.709
+know putting a system in the middle sort
+
+01:13:18.719 --> 01:13:21.189
+of that would make it simpler for your
+
+01:13:21.199 --> 01:13:23.830
+LLM to communicate with that endpoint.
+
+01:13:23.840 --> 01:13:27.030
+So for instance um you might you know
+
+01:13:27.040 --> 01:13:29.270
+have an MCP server and MCP client where
+
+01:13:29.280 --> 01:13:31.189
+you're trying to communicate with that
+
+01:13:31.199 --> 01:13:35.669
+travel database or the flight API or MCP
+
+01:13:35.679 --> 01:13:37.910
+and uh your agent might actually just
+
+01:13:37.920 --> 01:13:39.990
+communicate with it and say hey what do
+
+01:13:40.000 --> 01:13:42.229
+you need in order to give me more flight
+
+01:13:42.239 --> 01:13:45.110
+information and that that agent will
+
+01:13:45.120 --> 01:13:47.189
+respond by I would like you to tell me
+
+01:13:47.199 --> 01:13:48.790
+where is the origin flight where is the
+
+01:13:48.800 --> 01:13:50.550
+destination and what you're looking for
+
+01:13:50.560 --> 01:13:52.630
+at a high level. This is my requirement.
+
+01:13:52.640 --> 01:13:54.070
+Okay, let me get back to you with my
+
+01:13:54.080 --> 01:13:56.790
+requirements. Oh, you forgot to tell me
+
+01:13:56.800 --> 01:13:58.790
+your budget, whatever. Oh, let me give
+
+01:13:58.800 --> 01:14:01.910
+you my budget, etc. Um, and uh, it's
+
+01:14:01.920 --> 01:14:04.709
+it's it's agentto agent communication,
+
+01:14:04.719 --> 01:14:07.189
+which allows more scalability. You don't
+
+01:14:07.199 --> 01:14:09.669
+need to hardcode everything. Companies
+
+01:14:09.679 --> 01:14:12.229
+have displayed their MCPS out there and
+
+01:14:12.239 --> 01:14:14.149
+you can your agent can communicate with
+
+01:14:14.159 --> 01:14:16.310
+them and figure out how to get the data
+
+01:14:16.320 --> 01:14:18.630
+it needs. Does that make sense?
+
+01:14:18.640 --> 01:14:20.390
+&gt;&gt; Yeah.
+
+01:14:20.400 --> 01:14:24.550
+&gt;&gt; Oh, sorry. like rewriting any help like
+
+01:14:24.560 --> 01:14:27.590
+it's suffering only changes in the API
+
+01:14:27.600 --> 01:14:32.310
+rather agent you can rewrite that
+
+01:14:32.320 --> 01:14:36.310
+&gt;&gt; yes is it not just sh is
+
+01:14:36.320 --> 01:14:39.990
+&gt;&gt; uh I think it it is ultimately the
+
+01:14:40.000 --> 01:14:41.350
+question is isn't it chiefing issue
+
+01:14:41.360 --> 01:14:43.030
+because anyway if an API has to be
+
+01:14:43.040 --> 01:14:44.790
+updated the MCP has to be updated so
+
+01:14:44.800 --> 01:14:46.630
+what do you say right yes that that's
+
+01:14:46.640 --> 01:14:49.110
+correct but at least um it allows the
+
+01:14:49.120 --> 01:14:51.430
+agent to sort of go back enforce and
+
+01:14:51.440 --> 01:14:52.950
+figure out what the requirements are.
+
+01:14:52.960 --> 01:14:55.430
+But at the end of the day, ideally, if
+
+01:14:55.440 --> 01:14:57.030
+you're a startup, you have some
+
+01:14:57.040 --> 01:14:58.950
+documentation and automatically have an
+
+01:14:58.960 --> 01:15:01.590
+agent or an LLM workflow that reads that
+
+01:15:01.600 --> 01:15:03.189
+documentation and updates the code
+
+01:15:03.199 --> 01:15:05.510
+accordingly, you know, but I agree it's
+
+01:15:05.520 --> 01:15:07.030
+not it's not something that is fully
+
+01:15:07.040 --> 01:15:12.709
+autonomous. Yeah. Yeah.
+
+01:15:12.719 --> 01:15:14.709
+&gt;&gt; Why is that?
+
+01:15:14.719 --> 01:15:19.189
+&gt;&gt; Which security specifically?
+
+01:15:19.199 --> 01:15:21.590
+&gt;&gt; Yeah. So are there security issues with
+
+01:15:21.600 --> 01:15:23.350
+MCPS?
+
+01:15:23.360 --> 01:15:26.790
+So think about it this way. MCPS
+
+01:15:26.800 --> 01:15:28.470
+depending on the data that you get
+
+01:15:28.480 --> 01:15:29.830
+access to might have different
+
+01:15:29.840 --> 01:15:31.510
+requirements, lower stake or higher
+
+01:15:31.520 --> 01:15:33.590
+stake. I'm not an expert at you know the
+
+01:15:33.600 --> 01:15:35.669
+full range. But it wouldn't surprise me
+
+01:15:35.679 --> 01:15:39.350
+that um uh you know when you when you
+
+01:15:39.360 --> 01:15:43.270
+when you expose an MCP to an I think you
+
+01:15:43.280 --> 01:15:45.669
+would a lot of MCPs have authentication.
+
+01:15:45.679 --> 01:15:47.510
+So, you know, you might actually need a
+
+01:15:47.520 --> 01:15:49.030
+code to actually talk to it just like
+
+01:15:49.040 --> 01:15:52.149
+you would with an API or a key. Um,
+
+01:15:52.159 --> 01:15:53.910
+yeah, but that's a good question. I'm,
+
+01:15:53.920 --> 01:15:55.510
+you know, I'm not an expert at the
+
+01:15:55.520 --> 01:15:57.910
+security of these systems, but, you
+
+01:15:57.920 --> 01:16:02.709
+know, we can look into it.
+
+01:16:02.719 --> 01:16:04.950
+Any other questions on what we've seen
+
+01:16:04.960 --> 01:16:08.470
+with the agentic workflows, APIs, tools,
+
+01:16:08.480 --> 01:16:11.510
+MCPS, memory? All of that is under
+
+01:16:11.520 --> 01:16:12.950
+progress. So, even memory is not a
+
+01:16:12.960 --> 01:16:14.709
+solved problem by any mean. It's pretty
+
+01:16:14.719 --> 01:16:18.310
+hard actually to get. Yes,
+
+01:16:18.320 --> 01:16:20.229
+&gt;&gt; you don't need
+
+01:16:20.239 --> 01:16:25.110
+to confer
+
+01:16:25.120 --> 01:16:28.630
+to access the API, but technically
+
+01:16:28.640 --> 01:16:31.669
+engineer uh your way to achieving
+
+01:16:31.679 --> 01:16:33.430
+something from the API you can do the
+
+01:16:33.440 --> 01:16:40.870
+same.
+
+01:16:40.880 --> 01:16:43.430
+&gt;&gt; Exactly. Exactly. Yeah. is is MCP about
+
+01:16:43.440 --> 01:16:45.590
+efficiency or accessing more data. It's
+
+01:16:45.600 --> 01:16:48.229
+about efficiency. It's like, you know,
+
+01:16:48.239 --> 01:16:52.070
+let's say you have a coding agent um and
+
+01:16:52.080 --> 01:16:53.830
+you know, it has an MCP client and
+
+01:16:53.840 --> 01:16:55.830
+there's multiple MCP servers that are
+
+01:16:55.840 --> 01:16:58.709
+exposed out there. Um that agent can
+
+01:16:58.719 --> 01:17:00.709
+communicate very efficiently with them
+
+01:17:00.719 --> 01:17:03.830
+and find what it needs. um uh and it's
+
+01:17:03.840 --> 01:17:05.430
+it's a more efficient process than
+
+01:17:05.440 --> 01:17:09.350
+actually displaying APIs and the APIs on
+
+01:17:09.360 --> 01:17:10.870
+that side and how to ping them and what
+
+01:17:10.880 --> 01:17:12.630
+the protocol is you know but you know
+
+01:17:12.640 --> 01:17:14.070
+it's not about the data that is being
+
+01:17:14.080 --> 01:17:15.350
+exposed because ultimately you control
+
+01:17:15.360 --> 01:17:19.110
+the data that is being exposed
+
+01:17:19.120 --> 01:17:21.110
+you probably you know depending on how
+
+01:17:21.120 --> 01:17:22.709
+the MCP is built my guess is you
+
+01:17:22.719 --> 01:17:24.630
+probably expose yourself to other risks
+
+01:17:24.640 --> 01:17:29.830
+because your your MCP server can can see
+
+01:17:29.840 --> 01:17:32.470
+any input pretty much from another LLM
+
+01:17:32.480 --> 01:17:36.149
+and so it has to be robust. Um
+
+01:17:36.159 --> 01:17:40.390
+but yeah, super. Uh so let let's look at
+
+01:17:40.400 --> 01:17:43.510
+an example of a step-by-step uh uh uh
+
+01:17:43.520 --> 01:17:45.510
+workflow for the travel agent. So let's
+
+01:17:45.520 --> 01:17:49.110
+say the user says I want to plan a plan
+
+01:17:49.120 --> 01:17:52.709
+a trip um to Paris from December 15th to
+
+01:17:52.719 --> 01:17:57.590
+20th um with flights hotels near the FL
+
+01:17:57.600 --> 01:18:01.030
+tower and then an itinary of must visit
+
+01:18:01.040 --> 01:18:03.189
+places that's the task to the travel
+
+01:18:03.199 --> 01:18:05.830
+agent. Step two, the agent plans the
+
+01:18:05.840 --> 01:18:08.229
+steps. So it says I'm going to find
+
+01:18:08.239 --> 01:18:10.950
+flights. Use the flight search API uh to
+
+01:18:10.960 --> 01:18:12.790
+get option for December 15th. Search
+
+01:18:12.800 --> 01:18:14.870
+hotels, generate recommendation for
+
+01:18:14.880 --> 01:18:18.310
+places to visit, validate preferences,
+
+01:18:18.320 --> 01:18:21.350
+um, budget, etc. Book the trip with the
+
+01:18:21.360 --> 01:18:24.149
+payment processing API. Step three,
+
+01:18:24.159 --> 01:18:25.830
+that's just the planning by the way.
+
+01:18:25.840 --> 01:18:27.990
+Step three, execute the plan. Use your
+
+01:18:28.000 --> 01:18:30.870
+tools, combine the results, and then
+
+01:18:30.880 --> 01:18:33.350
+proactive user interaction and booking.
+
+01:18:33.360 --> 01:18:35.669
+It might make a first proposal to the
+
+01:18:35.679 --> 01:18:37.590
+user and ask the user to validate or
+
+01:18:37.600 --> 01:18:40.310
+invalidate and then may repeat that
+
+01:18:40.320 --> 01:18:43.189
+planning and execution process. And then
+
+01:18:43.199 --> 01:18:45.669
+finally, it might actually update the
+
+01:18:45.679 --> 01:18:47.669
+memory. It might say, "Oh, I just
+
+01:18:47.679 --> 01:18:49.189
+learned through this interaction that
+
+01:18:49.199 --> 01:18:52.229
+the user only likes direct flights. Next
+
+01:18:52.239 --> 01:18:55.830
+time I I'll only give direct flights."
+
+01:18:55.840 --> 01:18:58.790
+or I notice users are fine with
+
+01:18:58.800 --> 01:19:01.910
+threestar hotels or four-star hotels and
+
+01:19:01.920 --> 01:19:03.830
+in fact they're they don't want to go
+
+01:19:03.840 --> 01:19:07.030
+above budget or something like that.
+
+01:19:07.040 --> 01:19:10.310
+Um so that hopefully makes sense by now
+
+01:19:10.320 --> 01:19:12.070
+on you know how you might do that. My
+
+01:19:12.080 --> 01:19:15.189
+question for you is uh how would you
+
+01:19:15.199 --> 01:19:17.510
+know if this works and if you had such a
+
+01:19:17.520 --> 01:19:19.830
+system running in production how would
+
+01:19:19.840 --> 01:19:28.550
+you [clears throat] improve it?
+
+01:19:28.560 --> 01:19:31.910
+Yeah,
+
+01:19:31.920 --> 01:19:34.870
+&gt;&gt; so that's an example. So let users rate
+
+01:19:34.880 --> 01:19:37.669
+their experience at the end. Uh that
+
+01:19:37.679 --> 01:19:39.669
+would be an end to end test, right?
+
+01:19:39.679 --> 01:19:42.070
+You're looking at the user experience
+
+01:19:42.080 --> 01:19:44.070
+through the steps and say how good was
+
+01:19:44.080 --> 01:19:46.550
+it from one to five, let's say. Yeah,
+
+01:19:46.560 --> 01:19:48.630
+it's a good way. And then if you learn
+
+01:19:48.640 --> 01:19:51.830
+that a user says one, what how do you
+
+01:19:51.840 --> 01:19:59.990
+improve the the workflow?
+
+01:20:00.000 --> 01:20:01.990
+&gt;&gt; Okay, so you would go down a tree and
+
+01:20:02.000 --> 01:20:05.350
+say, "Okay, you said one uh what what
+
+01:20:05.360 --> 01:20:07.510
+was your issue?" And then the user says
+
+01:20:07.520 --> 01:20:10.149
+uh the prices were too high, let's say,
+
+01:20:10.159 --> 01:20:11.990
+and then you would go back and fix that
+
+01:20:12.000 --> 01:20:15.350
+specific uh uh tool or prompt or Yeah.
+
+01:20:15.360 --> 01:20:29.270
+Okay. Any other ideas?
+
+01:20:29.280 --> 01:20:31.030
+Yeah, good. So that's a good insight.
+
+01:20:31.040 --> 01:20:33.030
+Separate the LLM related stuff from the
+
+01:20:33.040 --> 01:20:35.189
+nonLM related stuff. The deterministic
+
+01:20:35.199 --> 01:20:37.110
+stuff. The deterministic stuff you might
+
+01:20:37.120 --> 01:20:39.510
+be able to fix it, you know, more
+
+01:20:39.520 --> 01:20:43.590
+objectively essentially. Yeah, there was
+
+01:20:43.600 --> 01:20:56.790
+what else?
+
+01:20:56.800 --> 01:21:00.550
+So, give me an example of an objective
+
+01:21:00.560 --> 01:21:02.630
+issue that you can notice and how you
+
+01:21:02.640 --> 01:21:06.310
+would fix it versus a subjective issue.
+
+01:21:06.320 --> 01:21:07.910
+&gt;&gt; Yeah.
+
+01:21:07.920 --> 01:21:10.470
+the flight
+
+01:21:10.480 --> 01:21:12.870
+which is cheaper
+
+01:21:12.880 --> 01:21:14.950
+directive
+
+01:21:14.960 --> 01:21:16.149
+that's
+
+01:21:16.159 --> 01:21:18.470
+&gt;&gt; okay so let's say you say there's the
+
+01:21:18.480 --> 01:21:20.310
+same flight but one is cheaper than the
+
+01:21:20.320 --> 01:21:22.950
+other let's say it's objectively worst
+
+01:21:22.960 --> 01:21:25.030
+and so you can capture that almost
+
+01:21:25.040 --> 01:21:26.229
+automatically yeah
+
+01:21:26.239 --> 01:21:28.149
+&gt;&gt; so you could actually build evals that
+
+01:21:28.159 --> 01:21:31.510
+are objective that are tracked across
+
+01:21:31.520 --> 01:21:34.229
+your users and you might actually run an
+
+01:21:34.239 --> 01:21:36.310
+analysis after and see that for the
+
+01:21:36.320 --> 01:21:40.070
+objective stuff. We noticed that our LLM
+
+01:21:40.080 --> 01:21:42.790
+AI agentic AI workflow is bad with
+
+01:21:42.800 --> 01:21:45.110
+pricing. It just doesn't read prices as
+
+01:21:45.120 --> 01:21:46.630
+well because it always gives a more
+
+01:21:46.640 --> 01:21:49.270
+expensive option. Yeah, you're perfectly
+
+01:21:49.280 --> 01:21:58.310
+right. How about the subjective stuff?
+
+01:21:58.320 --> 01:21:59.350
+&gt;&gt; Yeah.
+
+01:21:59.360 --> 01:22:01.510
+&gt;&gt; Like do you choose a direct or indirect
+
+01:22:01.520 --> 01:22:03.910
+flight if the indirect is a little bit
+
+01:22:03.920 --> 01:22:05.270
+cheaper?
+
+01:22:05.280 --> 01:22:07.030
+&gt;&gt; Yeah, good one. Do you do you choose a
+
+01:22:07.040 --> 01:22:09.350
+direct flight or an indirect flight if
+
+01:22:09.360 --> 01:22:10.950
+the indirect is cheaper but the direct
+
+01:22:10.960 --> 01:22:13.830
+is more comfortable? Um yeah, that's a
+
+01:22:13.840 --> 01:22:17.510
+good one actually. Um so how would you
+
+01:22:17.520 --> 01:22:19.270
+capture that information? Let's say this
+
+01:22:19.280 --> 01:22:23.590
+is used by thousands of users.
+
+01:22:23.600 --> 01:22:27.910
+&gt;&gt; Um could you feed something in about us?
+
+01:22:27.920 --> 01:22:30.629
+&gt;&gt; Uh could you feed something in? Yeah, I
+
+01:22:30.639 --> 01:22:33.189
+mean you could you could u could you
+
+01:22:33.199 --> 01:22:35.430
+feed something in uh about the user
+
+01:22:35.440 --> 01:22:37.350
+preferences? Well, you could you could
+
+01:22:37.360 --> 01:22:40.229
+build a data set that has some of that
+
+01:22:40.239 --> 01:22:42.470
+information. So, you build 10 prompts
+
+01:22:42.480 --> 01:22:44.790
+where the user is asking specifically
+
+01:22:44.800 --> 01:22:47.830
+for direct is saying that I prefer
+
+01:22:47.840 --> 01:22:49.669
+direct flights because I care about my
+
+01:22:49.679 --> 01:22:51.990
+time, let's say. And then you look at
+
+01:22:52.000 --> 01:22:53.990
+the output and you actually give a good
+
+01:22:54.000 --> 01:22:56.870
+the example of a good output and you
+
+01:22:56.880 --> 01:22:59.030
+probably are able to capture the
+
+01:22:59.040 --> 01:23:01.590
+performance of your agentic workflow on
+
+01:23:01.600 --> 01:23:04.550
+this specific eval whether does it
+
+01:23:04.560 --> 01:23:06.629
+prioritize does it understand price
+
+01:23:06.639 --> 01:23:08.310
+conscious is it price conscious
+
+01:23:08.320 --> 01:23:13.430
+essentially and comfort conscious
+
+01:23:13.440 --> 01:23:15.830
+what about the tone let's say let's say
+
+01:23:15.840 --> 01:23:18.870
+the LLM right now is not very friendly
+
+01:23:18.880 --> 01:23:21.990
+how would you notice do that and how
+
+01:23:22.000 --> 01:23:26.149
+would you fix it?
+
+01:23:26.159 --> 01:23:27.189
+&gt;&gt; Yeah,
+
+01:23:27.199 --> 01:23:30.629
+&gt;&gt; test user and like run prompts and see
+
+01:23:30.639 --> 01:23:33.110
+if there's something wrong with
+
+01:23:33.120 --> 01:23:35.350
+&gt;&gt; Okay, have a test user run the prompt
+
+01:23:35.360 --> 01:23:36.709
+and see if there's something wrong with
+
+01:23:36.719 --> 01:23:38.229
+that. Tell me about the last step. How
+
+01:23:38.239 --> 01:23:39.669
+would you notice that something is
+
+01:23:39.679 --> 01:23:40.790
+wrong?
+
+01:23:40.800 --> 01:23:47.910
+So have a couple of
+
+01:23:47.920 --> 01:23:50.629
+evaluates response and see if it's like
+
+01:23:50.639 --> 01:23:51.750
+satisfied.
+
+01:23:51.760 --> 01:23:53.750
+&gt;&gt; Yeah, I agree with your approach. Have
+
+01:23:53.760 --> 01:23:55.750
+LLM judges that evaluate the response
+
+01:23:55.760 --> 01:23:57.189
+against a certain rubric of what
+
+01:23:57.199 --> 01:23:59.510
+politeness look like. So here in this
+
+01:23:59.520 --> 01:24:01.830
+case you could actually start uh with
+
+01:24:01.840 --> 01:24:04.310
+error analysis. So you start you have a
+
+01:24:04.320 --> 01:24:06.390
+thousand users and you know you can pull
+
+01:24:06.400 --> 01:24:08.390
+up 20 user interaction and read through
+
+01:24:08.400 --> 01:24:11.510
+it and you might notice at first sight
+
+01:24:11.520 --> 01:24:14.709
+the LLM seems to be very rude. You know
+
+01:24:14.719 --> 01:24:17.750
+it's just super super short in its
+
+01:24:17.760 --> 01:24:20.390
+answers and it's not very helpful. Um
+
+01:24:20.400 --> 01:24:22.629
+you notice that with your air analysis
+
+01:24:22.639 --> 01:24:24.629
+manually. Then you go to the next stage.
+
+01:24:24.639 --> 01:24:26.629
+You actually put eval behind it. you
+
+01:24:26.639 --> 01:24:31.270
+say, "I'm going to create a set of um a
+
+01:24:31.280 --> 01:24:34.070
+set of LM judges that are going to look
+
+01:24:34.080 --> 01:24:36.390
+at the user interaction and are going to
+
+01:24:36.400 --> 01:24:39.350
+rate how polite it is and I'm going to
+
+01:24:39.360 --> 01:24:41.430
+give it a rubric. Then what I'm going to
+
+01:24:41.440 --> 01:24:43.189
+do is I'm going to flip my LLM. Instead
+
+01:24:43.199 --> 01:24:45.750
+of using GPT4, I'm going to use Grock.
+
+01:24:45.760 --> 01:24:47.030
+And instead of using Gro, I'm going to
+
+01:24:47.040 --> 01:24:49.350
+use Lama. And then I'm going to run
+
+01:24:49.360 --> 01:24:51.910
+those three LLM side by side, give it to
+
+01:24:51.920 --> 01:24:55.189
+my LLM judges, and then get my
+
+01:24:55.199 --> 01:24:59.270
+subjective score at the end to say, "Oh,
+
+01:24:59.280 --> 01:25:02.629
+X model was more polite on average."
+
+01:25:02.639 --> 01:25:04.310
+Yeah, perfectly right. That's an example
+
+01:25:04.320 --> 01:25:06.070
+of an EVA that is very specific and
+
+01:25:06.080 --> 01:25:07.990
+allows you to choose between LM. You
+
+01:25:08.000 --> 01:25:10.390
+could actually do the same eval across
+
+01:25:10.400 --> 01:25:13.030
+LM, but fix the LLM, change the prompt.
+
+01:25:13.040 --> 01:25:14.550
+You actually instead of saying act like
+
+01:25:14.560 --> 01:25:16.550
+a travel agent, you say act like a
+
+01:25:16.560 --> 01:25:18.470
+helpful travel agent and then you see
+
+01:25:18.480 --> 01:25:21.189
+the influence of that word on your eval
+
+01:25:21.199 --> 01:25:22.870
+with the LLM as judges. Does that make
+
+01:25:22.880 --> 01:25:27.590
+sense? Okay. Uh super. So let's let's
+
+01:25:27.600 --> 01:25:29.189
+move forward and do a case study with
+
+01:25:29.199 --> 01:25:32.149
+eval and then we're we're almost done um
+
+01:25:32.159 --> 01:25:34.390
+for today. Uh let's say your product
+
+01:25:34.400 --> 01:25:38.390
+managers manager asks you to build an AI
+
+01:25:38.400 --> 01:25:41.110
+agent for customer support.
+
+01:25:41.120 --> 01:25:43.590
+Okay, where do you start? And here is an
+
+01:25:43.600 --> 01:25:45.669
+example of the user prompt. I need to
+
+01:25:45.679 --> 01:25:47.830
+change my shipping address for order
+
+01:25:47.840 --> 01:25:51.910
+blah blah blah. I move to a new address.
+
+01:25:51.920 --> 01:25:54.149
+So what what do you start if I'm giving
+
+01:25:54.159 --> 01:26:04.709
+you that project? you know.
+
+01:26:04.719 --> 01:26:16.550
+&gt;&gt; Yes.
+
+01:26:16.560 --> 01:26:19.510
+&gt;&gt; So do some research, see benchmarks and
+
+01:26:19.520 --> 01:26:21.590
+how different models perform at customer
+
+01:26:21.600 --> 01:26:23.510
+support and then pick a model. That's
+
+01:26:23.520 --> 01:26:25.510
+what you mean. Yeah. You It's true. You
+
+01:26:25.520 --> 01:26:27.270
+could do that. What What What else could
+
+01:26:27.280 --> 01:26:34.550
+you do? Yeah.
+
+01:26:34.560 --> 01:26:37.510
+&gt;&gt; Okay. Yeah, I like that. Try to
+
+01:26:37.520 --> 01:26:39.270
+decompose the different tasks that it
+
+01:26:39.280 --> 01:26:41.510
+will need and try to guess which ones
+
+01:26:41.520 --> 01:26:43.110
+will be more of a struggle, which ones
+
+01:26:43.120 --> 01:26:44.310
+should be fuzzy, which one should be
+
+01:26:44.320 --> 01:26:46.870
+deterministic. Yeah, you're right.
+
+01:26:46.880 --> 01:26:48.629
+to sit down for like a day or two with a
+
+01:26:48.639 --> 01:26:53.189
+customer and see how the task
+
+01:26:53.199 --> 01:26:56.070
+probably task.
+
+01:26:56.080 --> 01:26:58.950
+&gt;&gt; Yeah, similar to what you said. That's
+
+01:26:58.960 --> 01:27:00.629
+what I would recommend as well. You say
+
+01:27:00.639 --> 01:27:02.390
+I would sit down with a customer support
+
+01:27:02.400 --> 01:27:04.310
+agent for a day or two and I would de
+
+01:27:04.320 --> 01:27:05.830
+compose the task they're going through.
+
+01:27:05.840 --> 01:27:07.590
+I will ask them where do they struggle,
+
+01:27:07.600 --> 01:27:09.750
+how much time it takes. Yes, that's
+
+01:27:09.760 --> 01:27:11.270
+usually where you want to start with
+
+01:27:11.280 --> 01:27:13.510
+task decomposition. So let's say we've
+
+01:27:13.520 --> 01:27:16.950
+done that work and we have this list I'm
+
+01:27:16.960 --> 01:27:18.550
+simplifying but the customer support
+
+01:27:18.560 --> 01:27:22.470
+agent human typically would extract info
+
+01:27:22.480 --> 01:27:24.390
+then look up in the database to retrieve
+
+01:27:24.400 --> 01:27:26.470
+the customer record then check the
+
+01:27:26.480 --> 01:27:29.430
+policy you know are we allowed to update
+
+01:27:29.440 --> 01:27:32.310
+the address or is it a fixed data point
+
+01:27:32.320 --> 01:27:34.070
+um and then draft the response email and
+
+01:27:34.080 --> 01:27:36.550
+sends the email okay so we've decomposed
+
+01:27:36.560 --> 01:27:39.030
+that task
+
+01:27:39.040 --> 01:27:42.629
+u once you've decomposed that task ask
+
+01:27:42.639 --> 01:28:03.910
+how do you design your agentic workflow?
+
+01:28:03.920 --> 01:28:07.669
+&gt;&gt; Yes. each step
+
+01:28:07.679 --> 01:28:09.750
+which one
+
+01:28:09.760 --> 01:28:12.870
+which one we're going to use
+
+01:28:12.880 --> 01:28:15.350
+method or whatever in each task what are
+
+01:28:15.360 --> 01:28:17.990
+you going to use for resources
+
+01:28:18.000 --> 01:28:20.149
+&gt;&gt; exactly so to repeat I'm going to you're
+
+01:28:20.159 --> 01:28:21.510
+going to look at the decomposition of
+
+01:28:21.520 --> 01:28:23.030
+tasks
+
+01:28:23.040 --> 01:28:25.189
+get an instinct of what's fuzzy what's
+
+01:28:25.199 --> 01:28:28.870
+deterministic and then determine which
+
+01:28:28.880 --> 01:28:32.229
+line is going to be an LLM one shot
+
+01:28:32.239 --> 01:28:34.709
+which one will require maybe a rag which
+
+01:28:34.719 --> 01:28:36.950
+one will require a tool, which one will
+
+01:28:36.960 --> 01:28:39.030
+require memory, which one so you will
+
+01:28:39.040 --> 01:28:41.669
+start designing that map completely
+
+01:28:41.679 --> 01:28:43.189
+right that's also what I would recommend
+
+01:28:43.199 --> 01:28:45.510
+you you might actually uh draft it and
+
+01:28:45.520 --> 01:28:49.270
+say okay I take the user prompt um and
+
+01:28:49.280 --> 01:28:52.629
+the first step of my task de composition
+
+01:28:52.639 --> 01:28:55.669
+was extract information that seems to be
+
+01:28:55.679 --> 01:28:58.870
+a vanilla LLM you you you can guess that
+
+01:28:58.880 --> 01:29:00.470
+the vanilla lm would probably be good
+
+01:29:00.480 --> 01:29:03.430
+enough at extracting the user wants to
+
+01:29:03.440 --> 01:29:05.430
+change address and this is the order
+
+01:29:05.440 --> 01:29:07.030
+number and this is the new address. You
+
+01:29:07.040 --> 01:29:09.030
+probably don't need too much technology
+
+01:29:09.040 --> 01:29:12.070
+there other than the LLM. Um the next
+
+01:29:12.080 --> 01:29:14.390
+step it feels like you need a tool
+
+01:29:14.400 --> 01:29:16.149
+because you're actually going to have to
+
+01:29:16.159 --> 01:29:19.590
+look up in the database and also update
+
+01:29:19.600 --> 01:29:21.430
+the address.
+
+01:29:21.440 --> 01:29:23.189
+So that might be a tool and you might
+
+01:29:23.199 --> 01:29:25.189
+have to build a custom tool for the LLM
+
+01:29:25.199 --> 01:29:26.950
+to say let me connect you to that
+
+01:29:26.960 --> 01:29:28.629
+database or let me give you access to
+
+01:29:28.639 --> 01:29:32.870
+that resource with an MCP. Yeah.
+
+01:29:32.880 --> 01:29:34.709
+After that, you probably need an LLM
+
+01:29:34.719 --> 01:29:36.709
+again to draft the email, but you would
+
+01:29:36.719 --> 01:29:39.189
+probably paste confirmation. You paste a
+
+01:29:39.199 --> 01:29:40.629
+confirmation that your address has been
+
+01:29:40.639 --> 01:29:43.510
+updated from X to Y. And then the LLM
+
+01:29:43.520 --> 01:29:45.189
+will draft an answer. And of course,
+
+01:29:45.199 --> 01:29:47.350
+just to not forget, you might need a
+
+01:29:47.360 --> 01:29:49.590
+tool to send the email. You know, you
+
+01:29:49.600 --> 01:29:53.510
+might actually need to, you know, post
+
+01:29:53.520 --> 01:29:57.350
+something to for the email to to go out
+
+01:29:57.360 --> 01:29:59.430
+and then you'll get the out. Does that
+
+01:29:59.440 --> 01:30:00.790
+make sense? So, exactly what you
+
+01:30:00.800 --> 01:30:03.350
+described. [sighs] Okay, now moving to
+
+01:30:03.360 --> 01:30:05.430
+the next step. Once we have decomposed
+
+01:30:05.440 --> 01:30:07.669
+our tasks, then we have designed an
+
+01:30:07.679 --> 01:30:09.990
+agentic workflow around it. It took us
+
+01:30:10.000 --> 01:30:11.830
+five minutes. In practice, it would take
+
+01:30:11.840 --> 01:30:13.110
+you more if you're building your startup
+
+01:30:13.120 --> 01:30:14.470
+on that. You want to make sure your task
+
+01:30:14.480 --> 01:30:15.910
+de composition is accurate, your thing
+
+01:30:15.920 --> 01:30:18.470
+is accurate here. And then you can have
+
+01:30:18.480 --> 01:30:20.550
+a lot of work done on every tool and
+
+01:30:20.560 --> 01:30:23.189
+optimize it and latency and cost. But
+
+01:30:23.199 --> 01:30:26.070
+let's say and now we want to know how um
+
+01:30:26.080 --> 01:30:28.629
+uh if it works, you know, and I'm going
+
+01:30:28.639 --> 01:30:31.750
+to assume that you have LLM traces. LLM
+
+01:30:31.760 --> 01:30:33.990
+traces are very important. Actually, if
+
+01:30:34.000 --> 01:30:36.149
+you're interviewing with an AI startup,
+
+01:30:36.159 --> 01:30:37.750
+I would recommend you in the interview
+
+01:30:37.760 --> 01:30:40.390
+process to ask them, do you have LLM
+
+01:30:40.400 --> 01:30:42.229
+traces? because if they don't have LM
+
+01:30:42.239 --> 01:30:44.790
+traces, it is pretty hard to debug an
+
+01:30:44.800 --> 01:30:46.629
+LLM system, you know, because you don't
+
+01:30:46.639 --> 01:30:49.430
+have visibility on the chain of complex
+
+01:30:49.440 --> 01:30:51.350
+prompts that were called and where the
+
+01:30:51.360 --> 01:30:55.110
+bug is and you know, so it's a basic
+
+01:30:55.120 --> 01:30:58.070
+sort of part of an AI startup stack to
+
+01:30:58.080 --> 01:31:01.350
+have LLM traces. [laughter] So let's
+
+01:31:01.360 --> 01:31:03.430
+assume you have traces. How would you
+
+01:31:03.440 --> 01:31:07.030
+know if your system work? you know, we I
+
+01:31:07.040 --> 01:31:08.550
+I you know, I I'm going to summarize
+
+01:31:08.560 --> 01:31:11.350
+some of the things I heard earlier. Um,
+
+01:31:11.360 --> 01:31:15.030
+you gave us an example of an end to end
+
+01:31:15.040 --> 01:31:16.470
+metric. You look at the user
+
+01:31:16.480 --> 01:31:18.870
+satisfaction at the end. Um, you can
+
+01:31:18.880 --> 01:31:21.669
+also do a component-based approach where
+
+01:31:21.679 --> 01:31:23.830
+you actually will look at the tool, the
+
+01:31:23.840 --> 01:31:26.870
+database updates and you will manually
+
+01:31:26.880 --> 01:31:29.270
+do an error analysis and see, oh, the
+
+01:31:29.280 --> 01:31:31.430
+tool actually always forgets to update
+
+01:31:31.440 --> 01:31:33.750
+the email. it just fails at writing, you
+
+01:31:33.760 --> 01:31:35.189
+know, and I'm gonna fix that. This is
+
+01:31:35.199 --> 01:31:39.270
+deterministic pretty much. Um or um you
+
+01:31:39.280 --> 01:31:40.950
+know, when it tries to send the email
+
+01:31:40.960 --> 01:31:43.430
+and ping the system that is supposed to
+
+01:31:43.440 --> 01:31:45.910
+send the email, it doesn't send it in
+
+01:31:45.920 --> 01:31:48.390
+the right format and so it bugs at that
+
+01:31:48.400 --> 01:31:51.510
+point. Again, you could fix that. Um
+
+01:31:51.520 --> 01:31:53.590
+draft of the email, the LM doesn't do a
+
+01:31:53.600 --> 01:31:55.189
+great job. It's not very polite at
+
+01:31:55.199 --> 01:31:57.350
+drafting the email, you know. So you
+
+01:31:57.360 --> 01:31:59.590
+could look at component by component and
+
+01:31:59.600 --> 01:32:01.270
+it's actually easier to debug than to
+
+01:32:01.280 --> 01:32:02.870
+look at it end to end. You'll probably
+
+01:32:02.880 --> 01:32:06.709
+do a mix of both. Um another way to look
+
+01:32:06.719 --> 01:32:09.350
+at it is what is objective versus what
+
+01:32:09.360 --> 01:32:11.990
+is subjective. So for example an
+
+01:32:12.000 --> 01:32:15.910
+objective example would be the LLM um
+
+01:32:15.920 --> 01:32:18.550
+extracted the wrong order ID. You know
+
+01:32:18.560 --> 01:32:21.350
+the the user said my order ID is X and
+
+01:32:21.360 --> 01:32:23.590
+the LLM when it actually pasted looked
+
+01:32:23.600 --> 01:32:25.270
+up in the database it used the wrong
+
+01:32:25.280 --> 01:32:28.070
+order ID. this is objectively wrong. You
+
+01:32:28.080 --> 01:32:30.070
+can actually write a Python code that
+
+01:32:30.080 --> 01:32:31.830
+checks that checks just the alignment
+
+01:32:31.840 --> 01:32:33.830
+between what the user mentioned and and
+
+01:32:33.840 --> 01:32:36.229
+what was actually pasted in the database
+
+01:32:36.239 --> 01:32:38.310
+or for the lookup.
+
+01:32:38.320 --> 01:32:39.990
+You also have subjective stuff which we
+
+01:32:40.000 --> 01:32:41.510
+talked about where you probably want to
+
+01:32:41.520 --> 01:32:44.149
+do either human rating or LLM as judges.
+
+01:32:44.159 --> 01:32:48.864
+It's very relevant for subjective evals.
+
+01:32:48.874 --> 01:32:51.510
+[snorts] Um and finally you will find
+
+01:32:51.520 --> 01:32:54.550
+yourself having quantitative evals and
+
+01:32:54.560 --> 01:32:57.030
+more qualitative evals. So quantitative
+
+01:32:57.040 --> 01:32:59.430
+will be percentage of successful address
+
+01:32:59.440 --> 01:33:01.590
+updates. The latency you could actually
+
+01:33:01.600 --> 01:33:03.990
+track the latency component based and
+
+01:33:04.000 --> 01:33:06.229
+see which one is the slowest. Let's say
+
+01:33:06.239 --> 01:33:08.950
+sending the email is 5 second you know
+
+01:33:08.960 --> 01:33:10.870
+it's too long let's say you would notice
+
+01:33:10.880 --> 01:33:13.189
+component based or the full workflow.
+
+01:33:13.199 --> 01:33:14.629
+And then you will decide where am I
+
+01:33:14.639 --> 01:33:16.790
+optimizing my latency and how am I going
+
+01:33:16.800 --> 01:33:20.390
+to do that. And then finally qualitative
+
+01:33:20.400 --> 01:33:22.310
+you might actually do some error
+
+01:33:22.320 --> 01:33:25.750
+analysis and look at you know where are
+
+01:33:25.760 --> 01:33:27.430
+the hallucinations
+
+01:33:27.440 --> 01:33:31.270
+um where are the tone mismatches
+
+01:33:31.280 --> 01:33:34.070
+uh you know are the user confused and by
+
+01:33:34.080 --> 01:33:35.350
+what they're confused you know that
+
+01:33:35.360 --> 01:33:37.189
+would be more qualitative and typically
+
+01:33:37.199 --> 01:33:40.470
+it would take more you know white glove
+
+01:33:40.480 --> 01:33:43.669
+approaches to do that okay so here's
+
+01:33:43.679 --> 01:33:45.510
+what it could look like I gave you some
+
+01:33:45.520 --> 01:33:49.590
+examples but you would build evals to
+
+01:33:49.600 --> 01:33:52.229
+determine objectively, subjectively,
+
+01:33:52.239 --> 01:33:54.149
+component based, end to- end based and
+
+01:33:54.159 --> 01:33:56.229
+then quantitatively and qualitatively
+
+01:33:56.239 --> 01:33:58.390
+where is your LLM failing and where it's
+
+01:33:58.400 --> 01:34:02.790
+doing well.
+
+01:34:02.800 --> 01:34:04.310
+Does that give you a sense of the type
+
+01:34:04.320 --> 01:34:06.870
+of stuff you could do to fix improve
+
+01:34:06.880 --> 01:34:09.990
+that agentic workflow?
+
+01:34:10.000 --> 01:34:11.990
+Super. Well, that was our case study on
+
+01:34:12.000 --> 01:34:13.830
+Evas. We're not going to del deeper into
+
+01:34:13.840 --> 01:34:16.310
+it, but hopefully it gave you a sense of
+
+01:34:16.320 --> 01:34:17.990
+the type of stuff you can do with LLM
+
+01:34:18.000 --> 01:34:20.950
+judges with, you know,
+
+01:34:20.960 --> 01:34:23.189
+objective, subjective, component-based,
+
+01:34:23.199 --> 01:34:26.790
+end to end, etc. U last section on
+
+01:34:26.800 --> 01:34:29.270
+multi- aent workflows.
+
+01:34:29.280 --> 01:34:33.189
+So you might you might ask uh hey uh why
+
+01:34:33.199 --> 01:34:35.350
+do we need a multi- aent workflow when
+
+01:34:35.360 --> 01:34:37.510
+we when the workflow already has
+
+01:34:37.520 --> 01:34:40.070
+multiple steps already calls the LLM
+
+01:34:40.080 --> 01:34:42.470
+multiple times already gives them tools
+
+01:34:42.480 --> 01:34:45.590
+why do we need multiple agents and so
+
+01:34:45.600 --> 01:34:46.870
+many people are talking about multi-
+
+01:34:46.880 --> 01:34:48.629
+aent system online it's not even a new
+
+01:34:48.639 --> 01:34:50.229
+thing frankly I mean multi- aent system
+
+01:34:50.239 --> 01:34:52.790
+have been around for a long time the the
+
+01:34:52.800 --> 01:34:55.110
+main advantage of a multi- aent system
+
+01:34:55.120 --> 01:34:58.390
+is going to be parallelism it's like is
+
+01:34:58.400 --> 01:35:01.750
+there something that I wish I would run
+
+01:35:01.760 --> 01:35:03.590
+in parallel
+
+01:35:03.600 --> 01:35:05.590
+sort of independently but maybe there
+
+01:35:05.600 --> 01:35:07.990
+are some syncs in the middle but that's
+
+01:35:08.000 --> 01:35:09.430
+where you want to put a multi- aent
+
+01:35:09.440 --> 01:35:12.870
+system it's when it's parallel the other
+
+01:35:12.880 --> 01:35:15.270
+advantage that some companies um have
+
+01:35:15.280 --> 01:35:17.910
+with multi- aent system is an agent can
+
+01:35:17.920 --> 01:35:20.550
+be reused. So let's say in a company you
+
+01:35:20.560 --> 01:35:21.990
+have an agent that's been built for
+
+01:35:22.000 --> 01:35:24.470
+design. That agent can be used in the
+
+01:35:24.480 --> 01:35:26.390
+marketing team and it can be used in the
+
+01:35:26.400 --> 01:35:28.550
+product team, you know, and so now
+
+01:35:28.560 --> 01:35:30.550
+you're optimizing an agent which has
+
+01:35:30.560 --> 01:35:32.470
+multiple stakeholders that can
+
+01:35:32.480 --> 01:35:34.470
+communicate with it and benefit from its
+
+01:35:34.480 --> 01:35:37.510
+uh performance.
+
+01:35:37.520 --> 01:35:39.830
+Um actually I'm going to ask you a
+
+01:35:39.840 --> 01:35:41.669
+question and take a few uh maybe a
+
+01:35:41.679 --> 01:35:43.990
+minute to think about it. Let's say you
+
+01:35:44.000 --> 01:35:47.270
+were uh building smart home automation
+
+01:35:47.280 --> 01:35:50.470
+for your apartment or your home. What
+
+01:35:50.480 --> 01:35:53.669
+agents would you want to build? Yeah,
+
+01:35:53.679 --> 01:35:55.830
+write it down and then I'm going to ask
+
+01:35:55.840 --> 01:35:58.470
+you in in a minute to share some of the
+
+01:35:58.480 --> 01:36:01.510
+agents that you will build. Also, think
+
+01:36:01.520 --> 01:36:03.750
+about how you would put a hierarchy
+
+01:36:03.760 --> 01:36:05.270
+between these agents or how you would
+
+01:36:05.280 --> 01:36:07.030
+organize them or who should communicate
+
+01:36:07.040 --> 01:36:09.590
+with who. Okay. Okay. Take a minute for
+
+01:36:09.600 --> 01:36:12.310
+that.
+
+01:36:12.320 --> 01:36:13.910
+be creative also because I'm gonna ask
+
+01:36:13.920 --> 01:36:15.990
+all of your agents and maybe you have an
+
+01:36:16.000 --> 01:36:21.990
+agent that nobody has thought of.
+
+01:36:22.000 --> 01:36:24.790
+Okay, let's get started. Who wants to
+
+01:36:24.800 --> 01:36:27.590
+give me a a set of agents that you would
+
+01:36:27.600 --> 01:36:31.510
+want for your home smart home? Yes.
+
+01:36:31.520 --> 01:36:34.470
+So uh the first is like set of agents
+
+01:36:34.480 --> 01:36:36.709
+that track my movements in the house and
+
+01:36:36.719 --> 01:36:40.070
+drop information about my house.
+
+01:36:40.080 --> 01:36:42.709
+Another agent receive that information
+
+01:36:42.719 --> 01:36:48.229
+and adjust the room temperature
+
+01:36:48.239 --> 01:36:51.750
+and another
+
+01:36:51.760 --> 01:37:00.790
+usage of
+
+01:37:00.800 --> 01:37:02.790
+&gt;&gt; okay so let me repeat you have four
+
+01:37:02.800 --> 01:37:06.390
+agents I think roughly one that tracks
+
+01:37:06.400 --> 01:37:09.030
+biometric like you're where are you in
+
+01:37:09.040 --> 01:37:11.030
+the home where you're moving, how you're
+
+01:37:11.040 --> 01:37:13.430
+moving, things like that. That sort of
+
+01:37:13.440 --> 01:37:17.990
+knows your location. The second one um
+
+01:37:18.000 --> 01:37:20.229
+determines the temperature
+
+01:37:20.239 --> 01:37:22.310
+of the rooms and has the ability to
+
+01:37:22.320 --> 01:37:25.990
+change it. The third one tracks energy
+
+01:37:26.000 --> 01:37:28.950
+efficiency and might be feedback on
+
+01:37:28.960 --> 01:37:32.070
+energy and energy usage and might be I
+
+01:37:32.080 --> 01:37:33.830
+don't know maybe it has the control over
+
+01:37:33.840 --> 01:37:35.430
+the temperature as well. I don't know
+
+01:37:35.440 --> 01:37:40.149
+actually or the gas or the water might
+
+01:37:40.159 --> 01:37:42.790
+cut your water at some point
+
+01:37:42.800 --> 01:37:44.470
+the and then you have an orchestrator
+
+01:37:44.480 --> 01:37:46.390
+agent. What is exactly the orchestrator
+
+01:37:46.400 --> 01:37:50.149
+doing?
+
+01:37:50.159 --> 01:37:53.430
+&gt;&gt; Instructions.
+
+01:37:53.440 --> 01:37:55.590
+&gt;&gt; Okay. Passes instructions. So is that
+
+01:37:55.600 --> 01:37:58.550
+the agent that communicates mainly with
+
+01:37:58.560 --> 01:37:59.590
+the user?
+
+01:37:59.600 --> 01:38:00.070
+&gt;&gt; Yep.
+
+01:38:00.080 --> 01:38:01.990
+&gt;&gt; Okay. So if I have I'm coming back home
+
+01:38:02.000 --> 01:38:04.629
+and I'm saying I want the oven to be
+
+01:38:04.639 --> 01:38:06.790
+preheated, I communicate with the
+
+01:38:06.800 --> 01:38:09.189
+orchestrator and then it would funnel to
+
+01:38:09.199 --> 01:38:11.669
+another agent. Okay, sounds good. Yeah,
+
+01:38:11.679 --> 01:38:14.070
+so that's an example of a I want to say
+
+01:38:14.080 --> 01:38:17.350
+a hierarchical um agent multi- aent
+
+01:38:17.360 --> 01:38:19.910
+system.
+
+01:38:19.920 --> 01:38:22.870
+Um what else? Any other ideas? What what
+
+01:38:22.880 --> 01:38:34.950
+would you add to that? Yeah.
+
+01:38:34.960 --> 01:38:37.270
+&gt;&gt; minimal action that you can do. Imagine
+
+01:38:37.280 --> 01:38:39.270
+entering a room or just entering a
+
+01:38:39.280 --> 01:38:42.229
+computer or just opening the minimum
+
+01:38:42.239 --> 01:38:45.510
+kind of action. you have like lot of
+
+01:38:45.520 --> 01:38:49.118
+agent per
+
+01:38:49.128 --> 01:38:50.229
+[clears throat]
+
+01:38:50.239 --> 01:38:52.629
+and then depending on who who is it and
+
+01:38:52.639 --> 01:38:55.430
+all the contact you have
+
+01:38:55.440 --> 01:38:57.350
+&gt;&gt; oh I like that that's a really good one
+
+01:38:57.360 --> 01:38:59.910
+so let me summarize you have a security
+
+01:38:59.920 --> 01:39:02.310
+agent that determines if you can enter
+
+01:39:02.320 --> 01:39:05.669
+or not and when you enter it understands
+
+01:39:05.679 --> 01:39:07.750
+who you are and then it gives you
+
+01:39:07.760 --> 01:39:09.990
+certain sets of permissions that might
+
+01:39:10.000 --> 01:39:11.990
+be different depending of if you're a
+
+01:39:12.000 --> 01:39:15.510
+parent or a or you know you might have
+
+01:39:15.520 --> 01:39:18.229
+access to certain cars and not others or
+
+01:39:18.239 --> 01:39:20.149
+the kid cannot open the fridge or I
+
+01:39:20.159 --> 01:39:21.270
+don't know like something like that.
+
+01:39:21.280 --> 01:39:23.669
+Yeah. Or okay. I like that. That's a
+
+01:39:23.679 --> 01:39:26.229
+good one. Yeah. And it does feel like
+
+01:39:26.239 --> 01:39:28.790
+it's a complex enough workflow where you
+
+01:39:28.800 --> 01:39:32.390
+want a specific workflow tied to that. I
+
+01:39:32.400 --> 01:39:34.629
+I agree. [snorts]
+
+01:39:34.639 --> 01:39:39.910
+&gt;&gt; What What else?
+
+01:39:39.920 --> 01:39:42.390
+&gt;&gt; Yes. Continuing on the ambient stuff,
+
+01:39:42.400 --> 01:39:45.350
+you can get more complicated. So energy
+
+01:39:45.360 --> 01:39:51.990
+savings with
+
+01:39:52.000 --> 01:40:02.709
+keeps open
+
+01:40:02.719 --> 01:40:05.669
+as well
+
+01:40:05.679 --> 01:40:07.750
+from the grocery store understand what's
+
+01:40:07.760 --> 01:40:10.950
+in your fridge or not.
+
+01:40:10.960 --> 01:40:12.950
+who are out to.
+
+01:40:12.960 --> 01:40:14.790
+&gt;&gt; Well, that's really good actually. So,
+
+01:40:14.800 --> 01:40:17.830
+you mentioned two of them. One is maybe
+
+01:40:17.840 --> 01:40:19.990
+an agent that has access to external
+
+01:40:20.000 --> 01:40:22.070
+APIs that can understand the weather out
+
+01:40:22.080 --> 01:40:25.109
+there, the wind, the sun, and then has
+
+01:40:25.119 --> 01:40:28.709
+control over certain devices at home,
+
+01:40:28.719 --> 01:40:30.790
+temperature, blinds, things like that,
+
+01:40:30.800 --> 01:40:32.390
+and also understands your preferences
+
+01:40:32.400 --> 01:40:34.790
+for it. that does feel like it's a good
+
+01:40:34.800 --> 01:40:36.390
+use case because you could give that to
+
+01:40:36.400 --> 01:40:38.390
+the orchestrator but it might lose
+
+01:40:38.400 --> 01:40:40.550
+itself because it's doing too much. So
+
+01:40:40.560 --> 01:40:42.310
+you probably and also these problems are
+
+01:40:42.320 --> 01:40:44.470
+tied together like temperature outdoor
+
+01:40:44.480 --> 01:40:47.270
+with the weather API might influence the
+
+01:40:47.280 --> 01:40:50.229
+temperature inside how you want it etc.
+
+01:40:50.239 --> 01:40:52.470
+And then the second one which I also
+
+01:40:52.480 --> 01:40:55.030
+like is you might have an agent that
+
+01:40:55.040 --> 01:40:57.270
+looks at your fridge and what's inside
+
+01:40:57.280 --> 01:40:59.030
+and it might actually have access to the
+
+01:40:59.040 --> 01:41:02.070
+camera in the fridge for example. Um and
+
+01:41:02.080 --> 01:41:03.830
+know your preferences and also has
+
+01:41:03.840 --> 01:41:06.870
+access to the e-commerce API to order
+
+01:41:06.880 --> 01:41:09.830
+Amazon groceries ahead of time. Um I
+
+01:41:09.840 --> 01:41:11.910
+agree and maybe the orchestrator will be
+
+01:41:11.920 --> 01:41:13.990
+the communication line with the user but
+
+01:41:14.000 --> 01:41:16.149
+it might communicate with that agent um
+
+01:41:16.159 --> 01:41:18.790
+in order to get it done. Uh yeah I like
+
+01:41:18.800 --> 01:41:20.950
+those. So those are all uh really good
+
+01:41:20.960 --> 01:41:24.550
+examples here. Here is the list I had um
+
+01:41:24.560 --> 01:41:27.830
+up there. So climate control, lighting,
+
+01:41:27.840 --> 01:41:30.149
+security, energy management,
+
+01:41:30.159 --> 01:41:32.229
+entertainment, notification agent,
+
+01:41:32.239 --> 01:41:34.070
+alerts about the system updates, energy
+
+01:41:34.080 --> 01:41:36.070
+saving and orchestrator. So all of them
+
+01:41:36.080 --> 01:41:39.109
+you mentioned actually. Um and then we
+
+01:41:39.119 --> 01:41:40.629
+didn't talk about the different
+
+01:41:40.639 --> 01:41:43.750
+interaction patterns, but you do have
+
+01:41:43.760 --> 01:41:46.149
+different ways to organize a multi- aent
+
+01:41:46.159 --> 01:41:49.350
+system. flat hierarchical. It sounds
+
+01:41:49.360 --> 01:41:51.669
+like this would be hierarchical. I
+
+01:41:51.679 --> 01:41:55.270
+agree. And the reason is UIUX is I would
+
+01:41:55.280 --> 01:41:56.790
+rather have to only talk to the
+
+01:41:56.800 --> 01:41:59.109
+orchestrator rather than have to go to a
+
+01:41:59.119 --> 01:42:01.430
+specialized application to do something
+
+01:42:01.440 --> 01:42:02.950
+like it feels like the orchestrator
+
+01:42:02.960 --> 01:42:04.950
+could be responsible for that. And so I
+
+01:42:04.960 --> 01:42:06.229
+agree I would probably go for a
+
+01:42:06.239 --> 01:42:09.030
+hierarchical setup here. But maybe you
+
+01:42:09.040 --> 01:42:11.430
+might act also add some connections
+
+01:42:11.440 --> 01:42:13.430
+between other agents like in the flat
+
+01:42:13.440 --> 01:42:16.390
+system where it's all to all for example
+
+01:42:16.400 --> 01:42:18.229
+uh with climate control and energy if
+
+01:42:18.239 --> 01:42:19.830
+you want to connect those two. You might
+
+01:42:19.840 --> 01:42:21.270
+actually allow them to speak with each
+
+01:42:21.280 --> 01:42:23.430
+other. When you allow agents to speak
+
+01:42:23.440 --> 01:42:25.910
+with each other it is basically an MCB
+
+01:42:25.920 --> 01:42:27.830
+protocol by the way. So you treat the
+
+01:42:27.840 --> 01:42:30.550
+agent like a tool exactly like a tool.
+
+01:42:30.560 --> 01:42:32.390
+Here is how you interact with this
+
+01:42:32.400 --> 01:42:34.149
+agent. Here is what it can tell you.
+
+01:42:34.159 --> 01:42:35.990
+Here is what it needs from you
+
+01:42:36.000 --> 01:42:37.510
+essentially.
+
+01:42:37.520 --> 01:42:39.990
+Okay, super. And then without going into
+
+01:42:40.000 --> 01:42:42.470
+the details, there are advantages to
+
+01:42:42.480 --> 01:42:45.109
+multi- aent workflows versus, you know,
+
+01:42:45.119 --> 01:42:47.910
+single agents such as debugging. It's
+
+01:42:47.920 --> 01:42:50.229
+easier to special debug a specialized
+
+01:42:50.239 --> 01:42:52.870
+agent and to be debug an entire system.
+
+01:42:52.880 --> 01:42:54.870
+Parallelization as well. It's easier to
+
+01:42:54.880 --> 01:42:57.430
+have things run in parallel. Um, and you
+
+01:42:57.440 --> 01:43:00.149
+can earn time. Um, you know, there are
+
+01:43:00.159 --> 01:43:01.910
+some advantages to doing that. And I
+
+01:43:01.920 --> 01:43:03.270
+leave you with this slide if you want to
+
+01:43:03.280 --> 01:43:06.550
+go deeper. Super. So we've learned so
+
+01:43:06.560 --> 01:43:09.270
+many techniques to optimize LLMs from
+
+01:43:09.280 --> 01:43:10.950
+prompts to chains to finetuning
+
+01:43:10.960 --> 01:43:13.830
+retrieval um and to multi- aent system
+
+01:43:13.840 --> 01:43:17.270
+as well. And then just to end on um a
+
+01:43:17.280 --> 01:43:19.590
+couple of trends I want you to watch. Uh
+
+01:43:19.600 --> 01:43:21.270
+I think next week is Thanksgiving. Is
+
+01:43:21.280 --> 01:43:23.350
+that it? Is Thanksgiving break? No, the
+
+01:43:23.360 --> 01:43:25.350
+week after. Okay. Well, ahead of the
+
+01:43:25.360 --> 01:43:26.550
+Thanksgiving break. So if you're
+
+01:43:26.560 --> 01:43:27.830
+traveling, you can think about these
+
+01:43:27.840 --> 01:43:31.750
+things. Um what's next is in AI, I
+
+01:43:31.760 --> 01:43:34.070
+wanted to call out a couple of trends.
+
+01:43:34.080 --> 01:43:37.750
+Um so Elas discover one of the OGs of uh
+
+01:43:37.760 --> 01:43:40.950
+you know LLM's um and you know OpenAI
+
+01:43:40.960 --> 01:43:44.310
+co-ounder um raised that question about
+
+01:43:44.320 --> 01:43:46.310
+are we plateauing or not? You know the
+
+01:43:46.320 --> 01:43:48.470
+question of are we going to see in the
+
+01:43:48.480 --> 01:43:52.310
+coming years LLM sort of not improve as
+
+01:43:52.320 --> 01:43:55.270
+fast as we've seen in the past. It's
+
+01:43:55.280 --> 01:43:56.950
+been the feeling in the community
+
+01:43:56.960 --> 01:43:58.790
+probably that you know the last version
+
+01:43:58.800 --> 01:44:02.950
+of GPT um did not bring the level of
+
+01:44:02.960 --> 01:44:05.590
+performance that people were expecting
+
+01:44:05.600 --> 01:44:07.590
+although it did make it so much easier
+
+01:44:07.600 --> 01:44:09.430
+to use for consumers because you don't
+
+01:44:09.440 --> 01:44:10.950
+need to interact with different models
+
+01:44:10.960 --> 01:44:12.870
+it's all under the same hood so it seems
+
+01:44:12.880 --> 01:44:15.910
+that it's progressing um but the plateau
+
+01:44:15.920 --> 01:44:18.070
+is is unclear the the way I would think
+
+01:44:18.080 --> 01:44:21.270
+about it is um
+
+01:44:21.280 --> 01:44:23.430
+the LLM scaling laws tell us that if we
+
+01:44:23.440 --> 01:44:26.470
+continue to improve compute and energy
+
+01:44:26.480 --> 01:44:28.629
+then LM should continue to improve but
+
+01:44:28.639 --> 01:44:30.070
+at some point it's going to plateau so
+
+01:44:30.080 --> 01:44:32.229
+what's going to take us to the next step
+
+01:44:32.239 --> 01:44:35.109
+and it's probably architecture search
+
+01:44:35.119 --> 01:44:36.870
+still a lot of LLM even if we don't
+
+01:44:36.880 --> 01:44:38.310
+understand what's under the hood are
+
+01:44:38.320 --> 01:44:40.790
+probably transformer based today but we
+
+01:44:40.800 --> 01:44:42.390
+know that the human brain does not
+
+01:44:42.400 --> 01:44:43.990
+operate the same way there's just
+
+01:44:44.000 --> 01:44:46.070
+certain things that we do that are much
+
+01:44:46.080 --> 01:44:48.149
+more efficient much faster we don't need
+
+01:44:48.159 --> 01:44:51.189
+as much data so theoretically we have so
+
+01:44:51.199 --> 01:44:52.870
+much to learn in terms of architecture
+
+01:44:52.880 --> 01:44:55.109
+search that we haven't figured out. It's
+
+01:44:55.119 --> 01:44:56.950
+not a surprise that you see those labs
+
+01:44:56.960 --> 01:45:00.070
+hire so many engineers because it is
+
+01:45:00.080 --> 01:45:01.750
+possible that in the next few years
+
+01:45:01.760 --> 01:45:03.030
+you're going to have thousands of
+
+01:45:03.040 --> 01:45:04.550
+engineers trying to figure out the
+
+01:45:04.560 --> 01:45:06.390
+different engineering hacks and tactics
+
+01:45:06.400 --> 01:45:08.070
+and architectural searches that are
+
+01:45:08.080 --> 01:45:11.030
+going to lead to better models and one
+
+01:45:11.040 --> 01:45:12.629
+of them suddenly will find the next
+
+01:45:12.639 --> 01:45:15.189
+transformer and it will reduce by 10x
+
+01:45:15.199 --> 01:45:17.350
+the need for compute and the need for
+
+01:45:17.360 --> 01:45:19.590
+energy. Um, you know, it's sort of if
+
+01:45:19.600 --> 01:45:23.430
+you've read Isak Azimov's u foundation
+
+01:45:23.440 --> 01:45:26.070
+series um individuals can have an
+
+01:45:26.080 --> 01:45:28.149
+amazing impact on the future because of
+
+01:45:28.159 --> 01:45:30.470
+their decisions. You know, whoever
+
+01:45:30.480 --> 01:45:33.270
+discovered transformers had a tremendous
+
+01:45:33.280 --> 01:45:35.510
+impact on the direction of AI. I think
+
+01:45:35.520 --> 01:45:36.950
+we're going to see more of that in the
+
+01:45:36.960 --> 01:45:38.790
+coming years where some group of
+
+01:45:38.800 --> 01:45:40.870
+researcher that is iterating fast might
+
+01:45:40.880 --> 01:45:42.709
+discover certain things that would
+
+01:45:42.719 --> 01:45:45.030
+suddenly unlock that plateau and take us
+
+01:45:45.040 --> 01:45:46.229
+to the next step and it's going to
+
+01:45:46.239 --> 01:45:47.990
+continue to improve like that. And so it
+
+01:45:48.000 --> 01:45:49.910
+doesn't surprise me that there's so many
+
+01:45:49.920 --> 01:45:52.149
+companies hiring engineers right now to
+
+01:45:52.159 --> 01:45:54.390
+figure out those hacks and those those
+
+01:45:54.400 --> 01:45:57.590
+techniques. Um the other set of gains
+
+01:45:57.600 --> 01:45:59.510
+that we might see is from multimodality.
+
+01:45:59.520 --> 01:46:02.229
+So the way to think about it is we've
+
+01:46:02.239 --> 01:46:05.189
+we've we've had LLM first text based and
+
+01:46:05.199 --> 01:46:07.990
+then we've added imaging and today you
+
+01:46:08.000 --> 01:46:09.510
+know models are very good at images.
+
+01:46:09.520 --> 01:46:11.270
+They're very good at text. Turns out
+
+01:46:11.280 --> 01:46:13.590
+that being good at images and being good
+
+01:46:13.600 --> 01:46:16.149
+at text makes the whole model better. So
+
+01:46:16.159 --> 01:46:17.270
+the fact that you're good at
+
+01:46:17.280 --> 01:46:18.950
+understanding a cat image makes you
+
+01:46:18.960 --> 01:46:21.750
+better at text as well for a cat. Now
+
+01:46:21.760 --> 01:46:24.070
+you add another modality like audio or
+
+01:46:24.080 --> 01:46:26.310
+video, the whole system gets better. So
+
+01:46:26.320 --> 01:46:28.870
+you're better at writing about a cat if
+
+01:46:28.880 --> 01:46:30.470
+you know what a cat sounds like if you
+
+01:46:30.480 --> 01:46:32.070
+can look at a cat on an image as well.
+
+01:46:32.080 --> 01:46:33.750
+Does that make sense? So we see gains
+
+01:46:33.760 --> 01:46:35.830
+that are translated from one modality to
+
+01:46:35.840 --> 01:46:37.510
+another. And that might lead in the
+
+01:46:37.520 --> 01:46:39.030
+pinnacle of robotics where all these
+
+01:46:39.040 --> 01:46:41.270
+modalities come together and suddenly
+
+01:46:41.280 --> 01:46:43.350
+the robot is better at running away from
+
+01:46:43.360 --> 01:46:45.510
+a cat because it understands what a cat
+
+01:46:45.520 --> 01:46:47.189
+is, how it sounds like, what it looks
+
+01:46:47.199 --> 01:46:50.229
+like, etc. That make sense? Um, the
+
+01:46:50.239 --> 01:46:51.830
+other one is the multiple methods
+
+01:46:51.840 --> 01:46:54.070
+working in harmony. In the Tuesday
+
+01:46:54.080 --> 01:46:56.390
+lectures, we've seen supervised
+
+01:46:56.400 --> 01:46:57.830
+learning, unsupervised learning,
+
+01:46:57.840 --> 01:46:59.510
+self-supervised learning, reinforcement
+
+01:46:59.520 --> 01:47:01.590
+learning, quality engineering, rags,
+
+01:47:01.600 --> 01:47:05.910
+etc. If you look at um how babies learn
+
+01:47:05.920 --> 01:47:08.310
+um it is probably a mix of those
+
+01:47:08.320 --> 01:47:11.510
+different approaches like a baby um
+
+01:47:11.520 --> 01:47:13.750
+might have some metalarning meaning you
+
+01:47:13.760 --> 01:47:15.910
+know it has some survival instinct that
+
+01:47:15.920 --> 01:47:19.270
+is in the encoded in the DNA most likely
+
+01:47:19.280 --> 01:47:21.030
+um and that's like the baby's
+
+01:47:21.040 --> 01:47:23.990
+pre-training if you will on top of that
+
+01:47:24.000 --> 01:47:27.270
+uh the mom or the dad um is pointing at
+
+01:47:27.280 --> 01:47:29.669
+stuff and saying bad good bad good good
+
+01:47:29.679 --> 01:47:32.070
+supervised learning on top of that the
+
+01:47:32.080 --> 01:47:34.070
+baby's falling on the ground and getting
+
+01:47:34.080 --> 01:47:35.830
+hurt and that's a reward signal for
+
+01:47:35.840 --> 01:47:37.830
+reinforcement learning. On top of that,
+
+01:47:37.840 --> 01:47:39.750
+the baby's observing other people doing
+
+01:47:39.760 --> 01:47:42.070
+stuff or other babies, you know, doing
+
+01:47:42.080 --> 01:47:43.669
+stuff, unsupervised learning. You see
+
+01:47:43.679 --> 01:47:46.070
+what I mean? It's we're probably a mix
+
+01:47:46.080 --> 01:47:48.310
+of all these methods and um and I think
+
+01:47:48.320 --> 01:47:49.990
+that's where the trend is going is where
+
+01:47:50.000 --> 01:47:52.470
+those methods that you've seen in CS230
+
+01:47:52.480 --> 01:47:55.430
+come together in order to build an AI
+
+01:47:55.440 --> 01:47:58.149
+system that learns fast, is low latency,
+
+01:47:58.159 --> 01:48:00.709
+is cheap, energy efficient, and makes
+
+01:48:00.719 --> 01:48:03.030
+the most out of all of these methods.
+
+01:48:03.040 --> 01:48:05.109
+Um, finally, and this is especially true
+
+01:48:05.119 --> 01:48:08.149
+at Stanford, um, you have research going
+
+01:48:08.159 --> 01:48:11.109
+on that you would consider human centric
+
+01:48:11.119 --> 01:48:13.189
+and some research that is nonhuman
+
+01:48:13.199 --> 01:48:15.189
+centric. By humancentric, I should say
+
+01:48:15.199 --> 01:48:17.430
+human approaches that are modeled after
+
+01:48:17.440 --> 01:48:19.669
+the brain and approaches that are not
+
+01:48:19.679 --> 01:48:21.270
+modeled after humans because it turns
+
+01:48:21.280 --> 01:48:23.910
+out that the human body is very
+
+01:48:23.920 --> 01:48:26.390
+limiting. And so if you actually only do
+
+01:48:26.400 --> 01:48:28.070
+research on what the human brain looks
+
+01:48:28.080 --> 01:48:29.590
+like, you're probably missing out on
+
+01:48:29.600 --> 01:48:31.189
+compute and energy and stuff like that
+
+01:48:31.199 --> 01:48:33.189
+that you can optimize even beyond
+
+01:48:33.199 --> 01:48:35.350
+neuronal connections in the brain. But
+
+01:48:35.360 --> 01:48:37.109
+you still can learn a lot from the human
+
+01:48:37.119 --> 01:48:38.870
+brain. And that's why there are
+
+01:48:38.880 --> 01:48:40.709
+professors that are running labs right
+
+01:48:40.719 --> 01:48:43.350
+now that try to understand how does back
+
+01:48:43.360 --> 01:48:45.510
+propagation work for humans. And in
+
+01:48:45.520 --> 01:48:47.430
+fact, it's probably that we don't have
+
+01:48:47.440 --> 01:48:48.950
+back propagation. We don't use back
+
+01:48:48.960 --> 01:48:50.629
+propagation. We only do forward
+
+01:48:50.639 --> 01:48:52.709
+propagation, let's say. So this type of
+
+01:48:52.719 --> 01:48:54.470
+stuff is interesting research that I
+
+01:48:54.480 --> 01:48:56.149
+would encourage you to read if you're
+
+01:48:56.159 --> 01:48:59.510
+curious about the direction of of AI. Um
+
+01:48:59.520 --> 01:49:01.830
+and then finally um one thing that's
+
+01:49:01.840 --> 01:49:03.590
+going to be pretty clear I call it all
+
+01:49:03.600 --> 01:49:05.910
+the time but it's the velocity at which
+
+01:49:05.920 --> 01:49:07.910
+things are moving. You're noticing part
+
+01:49:07.920 --> 01:49:09.830
+of the reason we're we're giving you a
+
+01:49:09.840 --> 01:49:11.910
+breath in CS230 is because these methods
+
+01:49:11.920 --> 01:49:13.430
+are changing so fast. So I don't want to
+
+01:49:13.440 --> 01:49:16.310
+bother going and teaching you the number
+
+01:49:16.320 --> 01:49:19.030
+17 methods on rag that optimizes the rag
+
+01:49:19.040 --> 01:49:20.229
+because in two years you're not going to
+
+01:49:20.239 --> 01:49:22.229
+need it, you know. So I would rather you
+
+01:49:22.239 --> 01:49:24.310
+think about what is the breadth of
+
+01:49:24.320 --> 01:49:26.070
+things you want to understand and when
+
+01:49:26.080 --> 01:49:27.590
+you need it you are sprinting and
+
+01:49:27.600 --> 01:49:29.669
+learning the exact thing you need faster
+
+01:49:29.679 --> 01:49:31.750
+because the half-life of ski is so low
+
+01:49:31.760 --> 01:49:33.109
+you know you want to come out of the
+
+01:49:33.119 --> 01:49:35.350
+class with a good breath and then have
+
+01:49:35.360 --> 01:49:37.189
+the ability to go deep whenever you need
+
+01:49:37.199 --> 01:49:38.950
+after the class and so that's sort of
+
+01:49:38.960 --> 01:49:41.510
+how that class is designed as well. Um
+
+01:49:41.520 --> 01:49:45.270
+yeah that's it for today. So thank you
+
+01:49:45.280 --> 01:49:49.880
+um thank you for participating.

@@ -78,127 +78,11 @@
 
 
 
-#Reranker            correct 
-
-import torch
-from sentence_transformers import CrossEncoder
-from langsmith import traceable
-from src.retriever import load_store, FETCH_K, TOP_K
-
-CROSS_ENCODER = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-
-
-class RerankingRetriever:
-
-    def __init__(self, fetch_k=FETCH_K, top_k=TOP_K):
-        self.store = load_store()
-        device = "mps" if torch.backends.mps.is_available() else "cpu"
-        print("Reranker device:", device)
-
-        self.reranker = CrossEncoder(CROSS_ENCODER, device=device)
-        self.fetch_k = fetch_k
-        self.top_k = top_k
-
-    @traceable(run_type="retriever", name="RerankingRetriever")
-    def invoke(self, query):
-        candidates = self.store.similarity_search(query, k=self.fetch_k)
-        pairs = [(query, doc.page_content) for doc in candidates]
-        scores = self.reranker.predict(pairs)
-
-        ranked = sorted(zip(candidates, scores), key=lambda x: x[1], reverse=True)
-        return [doc for doc, _ in ranked[:self.top_k]]
-
-
-
-
-
-
-
-
-
-# #Reranker with MMR 
-    
-# import torch
-# from sentence_transformers import CrossEncoder
-# from langsmith import traceable
-
-# from src.retriever import load_store, FETCH_K, TOP_K
-
-# CROSS_ENCODER = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-
-
-# class RerankingRetriever:
-
-#     def __init__(
-#         self,
-#         fetch_k=FETCH_K,
-#         top_k=TOP_K,
-#         mmr_fetch_k=40,
-#         mmr_lambda=0.7
-#     ):
-#         self.store = load_store()
-
-#         device = "mps" if torch.backends.mps.is_available() else "cpu"
-#         print("Reranker device:", device)
-
-#         self.reranker = CrossEncoder(CROSS_ENCODER, device=device)
-
-#         self.fetch_k = fetch_k
-#         self.top_k = top_k
-#         self.mmr_fetch_k = mmr_fetch_k
-#         self.mmr_lambda = mmr_lambda
-
-#     @traceable(run_type="retriever", name="MMR_RerankingRetriever")
-#     def invoke(self, query):
-
-#         # Step 1: Retrieve diverse candidate chunks using MMR
-#         candidates = self.store.max_marginal_relevance_search(
-#             query,
-#             k=self.fetch_k,
-#             fetch_k=self.mmr_fetch_k,
-#             lambda_mult=self.mmr_lambda
-#         )
-
-#         # Step 2: Rerank candidates using cross-encoder
-#         pairs = [
-#             (query, doc.page_content)
-#             for doc in candidates
-#         ]
-
-#         scores = self.reranker.predict(pairs)
-
-#         ranked = sorted(
-#             zip(candidates, scores),
-#             key=lambda x: x[1],
-#             reverse=True
-#         )
-
-#         # Step 3: Return the top-ranked chunks
-#         return [
-#             doc for doc, score in ranked[:self.top_k]
-#         ]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# #Reranker            correct 
 
 # import torch
 # from sentence_transformers import CrossEncoder
 # from langsmith import traceable
-
 # from src.retriever import load_store, FETCH_K, TOP_K
 
 # CROSS_ENCODER = "cross-encoder/ms-marco-MiniLM-L-6-v2"
@@ -209,7 +93,6 @@ class RerankingRetriever:
 #     def __init__(self, fetch_k=FETCH_K, top_k=TOP_K):
 #         self.store = load_store()
 #         device = "mps" if torch.backends.mps.is_available() else "cpu"
-
 #         print("Reranker device:", device)
 
 #         self.reranker = CrossEncoder(CROSS_ENCODER, device=device)
@@ -218,19 +101,181 @@ class RerankingRetriever:
 
 #     @traceable(run_type="retriever", name="RerankingRetriever")
 #     def invoke(self, query):
-#         docs = self.store.similarity_search(query, k=self.fetch_k)
+#         candidates = self.store.similarity_search(query, k=self.fetch_k)
+#         pairs = [(query, doc.page_content) for doc in candidates]
+#         scores = self.reranker.predict(pairs)
 
-#         if not docs:
-#             return []
-
-#         scores = self.reranker.predict([
-#             (query, doc.page_content) for doc in docs
-#         ])
-
-#         ranked = sorted(
-#             zip(docs, scores),
-#             key=lambda x: float(x[1]),
-#             reverse=True
-#         )
-
+#         ranked = sorted(zip(candidates, scores), key=lambda x: x[1], reverse=True)
 #         return [doc for doc, _ in ranked[:self.top_k]]
+
+
+
+
+
+
+
+
+
+
+
+import torch
+
+from sentence_transformers import CrossEncoder
+from langsmith import traceable
+from langchain_ollama import ChatOllama
+
+try:
+    from langchain_classic.retrievers import MultiQueryRetriever
+except ImportError:
+    from langchain.retrievers.multi_query import MultiQueryRetriever
+
+from src.retriever import (
+    load_store,
+    FETCH_K,
+    TOP_K
+)
+
+
+# =========================================================
+# CONFIGURATION
+# =========================================================
+
+CROSS_ENCODER = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
+MULTI_QUERY_MODEL = "qwen2.5:3b"
+
+MULTI_QUERY_CONTEXT_SIZE = 4096
+
+
+# =========================================================
+# MULTI-QUERY + CROSS-ENCODER RERANKER
+# =========================================================
+
+class RerankingRetriever:
+
+    def __init__(self, fetch_k=FETCH_K, top_k=TOP_K):
+
+        self.fetch_k = fetch_k
+        self.top_k = top_k
+
+        # Load Chroma vector database.
+        self.store = load_store()
+
+        # Select device for cross-encoder.
+        device = (
+            "mps"
+            if torch.backends.mps.is_available()
+            else "cpu"
+        )
+
+        print("Reranker device:", device)
+
+        self.reranker = CrossEncoder(
+            CROSS_ENCODER,
+            device=device
+        )
+
+        # Local Ollama model for generating query variations.
+        self.query_llm = ChatOllama(
+            model=MULTI_QUERY_MODEL,
+            temperature=0,
+            num_ctx=MULTI_QUERY_CONTEXT_SIZE
+        )
+
+        # Original vector retriever.
+        base_retriever = self.store.as_retriever(
+            search_kwargs={
+                "k": self.fetch_k
+            }
+        )
+
+        # Multi-Query Retriever.
+        self.multi_query_retriever = (
+            MultiQueryRetriever.from_llm(
+                retriever=base_retriever,
+                llm=self.query_llm,
+                include_original=True
+            )
+        )
+
+        print("Multi-Query Retriever initialized.")
+        print("Fetch K per query:", self.fetch_k)
+        print("Final Top K:", self.top_k)
+
+    # =====================================================
+    # RETRIEVAL + RERANKING
+    # =====================================================
+
+    @traceable(
+        run_type="retriever",
+        name="MultiQueryRerankingRetriever"
+    )
+    def invoke(self, query):
+
+        # Step 1: Retrieve documents using multiple queries.
+        candidates = self.multi_query_retriever.invoke(
+            query
+        )
+
+        print(
+            "\nMulti-query candidate count:",
+            len(candidates)
+        )
+
+        if not candidates:
+            return []
+
+        # Step 2: Remove duplicate documents.
+        unique_candidates = []
+        seen = set()
+
+        for doc in candidates:
+
+            key = (
+                doc.metadata.get("source", ""),
+                doc.metadata.get("session", ""),
+                doc.page_content
+            )
+
+            if key not in seen:
+
+                seen.add(key)
+                unique_candidates.append(doc)
+
+        print(
+            "Unique candidate count:",
+            len(unique_candidates)
+        )
+
+        # Step 3: Compare every candidate with the original query.
+        pairs = [
+            (query, doc.page_content)
+            for doc in unique_candidates
+        ]
+
+        # Step 4: Calculate cross-encoder relevance scores.
+        scores = self.reranker.predict(
+            pairs,
+            batch_size=8,
+            show_progress_bar=False
+        )
+
+        # Step 5: Rank documents by relevance.
+        ranked = sorted(
+            zip(unique_candidates, scores),
+            key=lambda item: float(item[1]),
+            reverse=True
+        )
+
+        # Step 6: Return the final top K documents.
+        final_results = [
+            doc
+            for doc, score in ranked[:self.top_k]
+        ]
+
+        print(
+            "Final documents returned:",
+            len(final_results)
+        )
+
+        return final_results

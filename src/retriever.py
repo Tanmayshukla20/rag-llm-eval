@@ -211,7 +211,7 @@ DATA_DIR = "data"
 
 # New database for the semantic chunking experiment.
 # The previous chroma_store_minilm database is preserved.
-DB_DIR = "chroma_store_minilm_semantic"
+DB_DIR = "chroma_store"
 
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
